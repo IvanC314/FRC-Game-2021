@@ -15,6 +15,13 @@ physics.setGravity(0, 0)
 math.randomseed(os.time())
 
 local turret
+local joystick
+local attack
+local energy
+
+local fx
+
+local gameLoopTimer
 
 local lives = 0 
 local score = 0
@@ -39,10 +46,83 @@ local function fire()
     newBullet.y = turret.y
     newBullet:toBack()
 
-    transition.to(newBullet, {y=-40, time = 5000,
+    transition.to(newBullet, {y=-40, time = 1200,
         onComplete = function() display.remove(newBullet) end })
 end
 
+
+
+local function stopTurret()
+	if turret.x >= display.contentWidth - 95 then
+		turret.x = display.contentWidth - 95
+		fx = 0
+	end
+	if turret.x <= 95 then
+		turret.x = 95
+		fx = 0
+	end
+end
+
+
+local function stopPad()
+	if joystick.x >= (2 * display.contentWidth / 5) then
+		joystick.x = (2 * display.contentWidth / 5)
+	end
+	if joystick.x <= 0 then
+		joystick.x = 0
+	end
+	if joystick.y <= display.contentHeight / 2 then 
+		joystick.y = display.contentHeight / 2
+	end
+	if joystick.y >= display.contentHeight then
+		joystick.y = display.contentHeight
+	end
+end
+
+local function joystickForce()
+	if (joystick.x > display.contentWidth / 5) then
+		fx = 10
+		-- print("move right")
+	elseif (joystick.x < display.contentWidth / 5) then
+		fx = -10
+		-- print("move left")
+	end
+	if joystick.x == (display.contentWidth / 5) then
+		fx = 0
+		-- print("no move")
+	end
+end
+
+local function joystickDetect(event)
+	local joystick = event.target
+	local phase = event.phase
+
+	if("began" == phase) then
+		display.currentStage:setFocus(joystick)
+		joystickOffsetX = event.x - joystick.x
+		joystickOffsetY = event.y - joystick.y
+
+	elseif ("moved" == phase) then
+		joystick.x = event.x - joystickOffsetX
+		joystick.y = event.y - joystickOffsetY
+
+		stopPad()
+		
+	elseif("ended" == phase or "cancelled" == phase) then
+		display.currentStage:setFocus(nil)
+		joystick.x = display.contentWidth / 5
+		joystick.y = 3 * display.contentHeight / 4
+		fx = 0 
+	end
+	return true
+end
+
+local function gameLoop()
+	joystickForce()
+	turret.x = turret.x + fx
+	stopTurret()
+
+end
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
@@ -68,16 +148,39 @@ function scene:create( event )
 	background.x = display.contentCenterX
 	background.y = display.contentCenterY
 
-	turret = display.newImageRect(mainGroup, "images/turret.png", 100, 110)
+	joystick = display.newImageRect(uiGroup, "images/joystick.png", display.contentWidth / 6, display.contentWidth / 6)
+	physics.addBody( joystick, { bounce = 0, isSensor = true } )
+	joystick.x = display.contentWidth / 5
+	joystick.y = 3 * display.contentHeight / 4
+	joystick.alpha = .2
+
+	attack = display.newImageRect(uiGroup, "images/attack.png", display.contentWidth / 6.5, display.contentWidth / 6.5)
+	physics.addBody( attack, { bounce = 0, isSensor = true } )
+	attack.x = 7.5 * display.contentWidth / 10
+	attack.y = 5 * display.contentHeight / 6
+	attack.alpha = .3
+
+	energy = display.newImageRect(uiGroup, "images/energize.png", display.contentWidth / 6.5, display.contentWidth / 6.5)
+	physics.addBody( energy, { bounce = 0, isSensor = true } )
+	energy.x = 9 * display.contentWidth / 10
+	energy.y = 5 * display.contentHeight / 6
+	energy.alpha = .3
+
+	turret = display.newImageRect(mainGroup, "images/turret.png", 90, 110)
 	turret.x = display.contentCenterX
-	turret.y = display.contentHeight - 100
-	physics.addBody(turret, {radius = 30, isSensor = true})
+	turret.y = display.contentHeight - 60
+	physics.addBody(turret, "dynamic", {radius = 30, isSensor = true})
 	turret.myName = "turret"
 
 	livesText = display.newText(uiGroup, "Lives: " .. lives, display.contentCenterX/6, display.contentCenterY/8, native.systemFont, 36)
 	scoreText = display.newText(uiGroup, "Score: " .. score, display.contentCenterX/6, display.contentCenterY/8 + 50, native.systemFont, 36)
+	livesText:setFillColor(0, 0, 0)
+	scoreText:setFillColor(0, 0, 0)
 
-	turret:addEventListener( "tap", fire )
+
+	attack:addEventListener( "tap", fire )
+	joystick:addEventListener("touch", joystickDetect)
+
 end
 
 
@@ -92,6 +195,7 @@ function scene:show( event )
 
 	elseif ( phase == "did" ) then
 		-- Code here runs when the scene is entirely on screen
+		gameLoopTimer = timer.performWithDelay(25, gameLoop, 0)
 
 	end
 end
@@ -108,7 +212,10 @@ function scene:hide( event )
 
 	elseif ( phase == "did" ) then
 		-- Code here runs immediately after the scene goes entirely off screen
+		timer.cancel(gameLoopTimer)
 
+		physics.pause()
+		composer.removeScene("game")
 	end
 end
 
