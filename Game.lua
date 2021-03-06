@@ -20,10 +20,12 @@ local attack
 local energy
 
 local fx
-
+local asteroidsTable = {}
+local died = false
 local gameLoopTimer
+local asteroidTimer
 
-local lives = 0 
+local lives = 3
 local score = 0
 
 local backGroup
@@ -38,6 +40,7 @@ end
 local function fire()
     local newBullet = display.newImageRect(mainGroup, "images/bullet.png", 40, 40) 
 	physics.addBody(newBullet, "dynamic", {isSensor = true})
+	newBullet:applyTorque(math.random(40, 150))
 
     newBullet.isBullet = true
     newBullet.myName = "bullet"
@@ -50,8 +53,6 @@ local function fire()
         onComplete = function() display.remove(newBullet) end })
 end
 
-
-
 local function stopTurret()
 	if turret.x >= display.contentWidth - 95 then
 		turret.x = display.contentWidth - 95
@@ -62,7 +63,6 @@ local function stopTurret()
 		fx = 0
 	end
 end
-
 
 local function stopPad()
 	if joystick.x >= (2 * display.contentWidth / 5) then
@@ -80,11 +80,11 @@ local function stopPad()
 end
 
 local function joystickForce()
-	if (joystick.x > display.contentWidth / 5) then
-		fx = 10
+	if (joystick.x > display.contentWidth / 5) or (keyRight == true) then
+		fx = 12
 		-- print("move right")
-	elseif (joystick.x < display.contentWidth / 5) then
-		fx = -10
+	elseif (joystick.x < display.contentWidth / 5) or (keyLeft == true) then
+		fx = -12
 		-- print("move left")
 	end
 	if joystick.x == (display.contentWidth / 5) then
@@ -117,12 +117,118 @@ local function joystickDetect(event)
 	return true
 end
 
+local function restore()
+    turret.isBodyActive = false
+    -- turret.x = display.contentCenterX
+    -- turret.y = display.contentHeight - 100
+
+    transition.to(turret, {alpha = 1, time = 3000, 
+    onComplete = function() 
+    turret.isBodyActive = true 
+    died = false end})
+end
+
+local function endGame()
+	composer.gotoScene("menu")
+end
+
+local function speedCalc(x)
+	return 3500 - (1000*math.log(x + 1))
+end
+
+local function createAsteroid()
+	local asteroidType = math.random(1, 2)
+	if (asteroidType == 1) then
+    	local newAsteroid = display.newImageRect(mainGroup, "images/asteroid1.png", 25, 25)
+    	table.insert(asteroidsTable, newAsteroid)
+    	physics.addBody(newAsteroid, "dynamic", {radius = 40, bounce = 0.2})
+    	newAsteroid.myName = "asteroid"
+		newAsteroid.x = math.random(100, display.contentWidth - 100)
+		newAsteroid.y = math.random(-200, -100)
+		local asteroidScale = math.random(3,5)
+		newAsteroid.xScale = asteroidScale
+		newAsteroid.yScale = asteroidScale
+		newAsteroid:setLinearVelocity(math.random(-5, 5), 40)
+		newAsteroid:applyTorque(math.random(-15, 15))
+	else
+		local newAsteroid = display.newImageRect(mainGroup, "images/asteroid2.png", 25, 25)
+		table.insert(asteroidsTable, newAsteroid)
+    	physics.addBody(newAsteroid, "dynamic", {radius = 40, bounce = 0.2})
+    	newAsteroid.myName = "asteroid"
+		newAsteroid.x = math.random(100, display.contentWidth - 100)
+		newAsteroid.y = math.random(-200, -100)
+		local asteroidScale = math.random(3,5)
+		newAsteroid.xScale = asteroidScale
+		newAsteroid.yScale = asteroidScale
+		newAsteroid:setLinearVelocity(math.random(-5, 5), (6 * math.sqrt(score)) + 25)
+		newAsteroid:applyTorque(math.random(-15, 15))
+	end
+end
+
+local function onCollision(event)
+    if (event.phase == "began") then
+        local obj1 = event.object1
+        local obj2 = event.object2
+
+        if ((obj1.myName == "bullet" and obj2.myName == "asteroid") 
+        or (obj1.myName == "asteroid" and obj2.myName == "bullet"))
+        then 
+            display.remove(obj1)
+            display.remove(obj2)
+
+            for i = #asteroidsTable, 1, -1 do
+                if(asteroidsTable[i] == obj1 or asteroidsTable[i] == obj2) then
+                    table.remove(asteroidsTable, i)
+                    break
+                end
+            end
+            score = score + 1
+            scoreText.text = "Score: ".. score
+
+        elseif ( ( obj1.myName == "turret" and obj2.myName == "asteroid" ) or
+        ( obj1.myName == "asteroid" and obj2.myName == "turret" ) )
+        then 
+            if (died == false) then
+                died = true
+
+                lives = lives - 1
+                livesText.text = "Lives: "..lives
+
+                if (lives == 0) then
+					timer.cancel(gameLoopTimer)
+					timer.cancel(asteroidTimer)
+					display.remove(turret)
+					timer.performWithDelay(1500, endGame)
+                else
+                    turret.alpha = .1
+					restore()
+                end
+            end
+        end
+    end
+end
+
 local function gameLoop()
 	joystickForce()
 	turret.x = turret.x + fx
 	stopTurret()
 
+	-- spawn and delete out of bounds asteroids
+    -- createAsteroid()
+	
+    for i = #asteroidsTable, 1, -1 do
+        local thisAsteroid = asteroidsTable[i]
+
+        if(thisAsteroid.x < 0 or 
+            thisAsteroid.x > display.contentWidth)
+        then 
+            display.remove(thisAsteroid)
+            table.remove(asteroidsTable, i)
+        end
+    end
+
 end
+
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
@@ -138,7 +244,7 @@ function scene:create( event )
 	backGroup = display.newGroup()  -- Display group for the background image
     sceneGroup:insert( backGroup )  -- Insert into the scene's view group
  
-    mainGroup = display.newGroup()  -- Display group for the ship, asteroids, lasers, etc.
+    mainGroup = display.newGroup()  -- Display group for the turret, asteroids, lasers, etc.
     sceneGroup:insert( mainGroup )  -- Insert into the scene's view group
  
     uiGroup = display.newGroup()    -- Display group for UI objects like the score
@@ -180,7 +286,6 @@ function scene:create( event )
 
 	attack:addEventListener( "tap", fire )
 	joystick:addEventListener("touch", joystickDetect)
-
 end
 
 
@@ -195,8 +300,10 @@ function scene:show( event )
 
 	elseif ( phase == "did" ) then
 		-- Code here runs when the scene is entirely on screen
+		physics.start()
+		Runtime:addEventListener( "collision", onCollision )
 		gameLoopTimer = timer.performWithDelay(25, gameLoop, 0)
-
+		asteroidTimer = timer.performWithDelay(speedCalc(score), createAsteroid, 0)
 	end
 end
 
@@ -213,7 +320,8 @@ function scene:hide( event )
 	elseif ( phase == "did" ) then
 		-- Code here runs immediately after the scene goes entirely off screen
 		timer.cancel(gameLoopTimer)
-
+		timer.cancel(asteroidTimer)
+		Runtime:removeEventListener("collision", onCollision)
 		physics.pause()
 		composer.removeScene("game")
 	end
