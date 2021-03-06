@@ -30,6 +30,7 @@ local asteroidTimer
 
 local lives = 3
 local score = 0
+local ammo = 50
 
 local backGroup
 local mainGroup
@@ -38,22 +39,26 @@ local uiGroup
 local function updateText()
     livesText.text = "Lives: " .. lives
     scoreText.text = "Score: " .. score
+	ammoText.text = "Energy: " .. ammo
 end
 
 local function fire()
-    local newBullet = display.newImageRect(mainGroup, "images/bullet.png", 40, 40) 
-	physics.addBody(newBullet, "dynamic", {isSensor = true})
-	newBullet:applyTorque(math.random(40, 150))
+	if ammo -3 > 0 then
+		local newBullet = display.newImageRect(mainGroup, "images/bullet.png", 40, 40) 
+		physics.addBody(newBullet, "dynamic", {isSensor = true})
+		newBullet:applyTorque(math.random(40, 150))
 
-    newBullet.isBullet = true
-    newBullet.myName = "bullet"
+		newBullet.isBullet = true
+		newBullet.myName = "bullet"
 
-    newBullet.x = turret.x
-    newBullet.y = turret.y
-    newBullet:toBack()
+		newBullet.x = turret.x
+		newBullet.y = turret.y
+		newBullet:toBack()
 
-    transition.to(newBullet, {y=-40, time = 1200,
-        onComplete = function() display.remove(newBullet) end })
+		transition.to(newBullet, {y=-40, time = 1200,
+			onComplete = function() display.remove(newBullet) end })
+		ammo = ammo -3
+	end
 end
 
 local function stopTurret()
@@ -116,6 +121,32 @@ local function joystickDetect(event)
 		joystick.x = display.contentWidth / 5
 		joystick.y = 3 * display.contentHeight / 4
 		fx = 0 
+	end
+	return true
+end
+
+local function addEnergy()
+	ammo = ammo + 1
+end
+
+local energyTimer = timer.performWithDelay(100, addEnergy, 0)
+
+local function energyPress(event)
+	local energy = event.target
+	local phase = event.phase
+
+	if("began" == phase) then
+		-- display.currentStage:setFocus(joystick)
+
+		timer.resume(energyTimer)
+
+	-- elseif ("moved" == phase) then
+
+	-- 	ammo = ammo + 1
+		
+	elseif("ended" == phase or "cancelled" == phase) then
+		-- display.currentStage:setFocus(nil)
+		timer.pause(energyTimer)
 	end
 	return true
 end
@@ -213,6 +244,8 @@ local function onCollision(event)
 end
 
 local function gameLoop()
+	updateText()
+
 	joystickForce()
 	turret.x = turret.x + fx
 	stopTurret()
@@ -244,7 +277,7 @@ function scene:create( event )
 	-- Code here runs when the scene is first created but has not yet appeared on screen
 
 	physics.pause()
-
+	timer.pause(energyTimer)
 	backGroup = display.newGroup()  -- Display group for the background image
     sceneGroup:insert( backGroup )  -- Insert into the scene's view group
  
@@ -284,8 +317,10 @@ function scene:create( event )
 
 	livesText = display.newText(uiGroup, "Lives: " .. lives, display.contentCenterX/6, display.contentCenterY/8, native.systemFont, 36)
 	scoreText = display.newText(uiGroup, "Score: " .. score, display.contentCenterX/6, display.contentCenterY/8 + 50, native.systemFont, 36)
+	ammoText = display.newText(uiGroup, "Energy: " .. ammo, display.contentCenterX/6, display.contentCenterY/8 + 100, native.systemFont, 36)
 	livesText:setFillColor(0, 0, 0)
 	scoreText:setFillColor(0, 0, 0)
+	ammoText:setFillColor(0, 0, 0)
 
 	display.currentStage:setFocus(joystick)
 	-- display.currentStage:setFocus(nil)
@@ -309,6 +344,7 @@ function scene:show( event )
 		Runtime:addEventListener( "collision", onCollision )
 		attack:addEventListener( "tap", fire )
 		joystick:addEventListener("touch", joystickDetect)
+		energy:addEventListener("touch", energyPress)
 		gameLoopTimer = timer.performWithDelay(25, gameLoop, 0)
 		asteroidTimer = timer.performWithDelay(speedCalc(score), createAsteroid, 0)
 	end
@@ -328,9 +364,11 @@ function scene:hide( event )
 		-- Code here runs immediately after the scene goes entirely off screen
 		timer.cancel(gameLoopTimer)
 		timer.cancel(asteroidTimer)
+		timer.cancel(energyTimer)
 		Runtime:removeEventListener("collision", onCollision)
 		attack:removeEventListener("tap", fire)
 		joystick:removeEventListener("touch", joystickDetect)
+		energy:removeEventListener("touch", energyPress)
 		physics.pause()
 		composer.removeScene("game")
 	end
