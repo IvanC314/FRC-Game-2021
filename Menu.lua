@@ -10,12 +10,40 @@ local scene = composer.newScene()
 
 
 local function gotoGame()
-	composer.gotoScene("game", { time=100, effect="crossFade" })
+	composer.gotoScene("game", { time=500, effect="crossFade" })
 end
 
--- local function gotoHighscores()
--- 	composer.gotoScene("highscores", { time=800, effect="crossFade" })
--- end
+local json = require("json")
+
+local scoresTable = {}
+
+local filePath = system.pathForFile("scores.json", system.DocumentsDirectory)
+
+local function loadScores()
+	local file = io.open(filePath, "r")
+
+	if file then
+		local contents = file:read("*a")
+		io.close(file)
+		scoresTable = json.decode(contents)
+	end
+
+	if (scoresTable == nil or #scoresTable == 0) then
+		scoresTable = {0}
+	end
+end
+
+local function saveScores()
+	table.remove(scoresTable, 2)
+
+
+	local file = io.open(filePath, "w")
+
+	if file then
+		file:write(json.encode(scoresTable))
+		io.close(file)
+	end
+end
 
 
 -- -----------------------------------------------------------------------------------
@@ -35,11 +63,23 @@ function scene:create( event )
 	local playButton = display.newText(sceneGroup, "Play", display.contentCenterX,  (3*display.contentHeight)/8 , native.systemFont, 60)
 	playButton:setFillColor(0, 0, 0)
 
-    local highScoresButton = display.newText( sceneGroup, "High Score: ", display.contentCenterX, 3* display.contentHeight/4, native.systemFont, 44 )
+	loadScores()
+	print(scoresTable)
+
+	table.insert(scoresTable, composer.getVariable("finalScore")) 
+	composer.setVariable("finalScore", 0)
+	print(scoresTable)
+	local function compare(a, b)
+		return a > b
+	end
+	table.sort(scoresTable, compare)
+	print(scoresTables)
+	saveScores()
+
+    local highScoresButton = display.newText( sceneGroup, "High Score:".. scoresTable[1], display.contentCenterX, 3* display.contentHeight/4, native.systemFont, 44 )
 	highScoresButton:setFillColor(0, 0, 0)
 
 	playButton:addEventListener("tap", gotoGame)
-	-- highScoresButton:addEventListener("tap", gotoHighscores)
 
 end
 
@@ -71,7 +111,7 @@ function scene:hide( event )
 
 	elseif ( phase == "did" ) then
 		-- Code here runs immediately after the scene goes entirely off screen
-
+		composer.removeScene("menu")
 	end
 end
 

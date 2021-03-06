@@ -20,6 +20,9 @@ local attack
 local energy
 
 local fx
+local joystickOffsetX
+local joystickOffsetY
+
 local asteroidsTable = {}
 local died = false
 local gameLoopTimer
@@ -129,6 +132,7 @@ local function restore()
 end
 
 local function endGame()
+	composer.setVariable("finalScore", score)
 	composer.gotoScene("menu")
 end
 
@@ -144,11 +148,11 @@ local function createAsteroid()
     	physics.addBody(newAsteroid, "dynamic", {radius = 40, bounce = 0.2})
     	newAsteroid.myName = "asteroid"
 		newAsteroid.x = math.random(100, display.contentWidth - 100)
-		newAsteroid.y = math.random(-200, -100)
+		newAsteroid.y = math.random(-150, -100)
 		local asteroidScale = math.random(3,5)
 		newAsteroid.xScale = asteroidScale
 		newAsteroid.yScale = asteroidScale
-		newAsteroid:setLinearVelocity(math.random(-5, 5), 40)
+		newAsteroid:setLinearVelocity(0, (6 * math.sqrt(score)) + 25)
 		newAsteroid:applyTorque(math.random(-15, 15))
 	else
 		local newAsteroid = display.newImageRect(mainGroup, "images/asteroid2.png", 25, 25)
@@ -160,7 +164,7 @@ local function createAsteroid()
 		local asteroidScale = math.random(3,5)
 		newAsteroid.xScale = asteroidScale
 		newAsteroid.yScale = asteroidScale
-		newAsteroid:setLinearVelocity(math.random(-5, 5), (6 * math.sqrt(score)) + 25)
+		newAsteroid:setLinearVelocity(0, (6 * math.sqrt(score)) + 25)
 		newAsteroid:applyTorque(math.random(-15, 15))
 	end
 end
@@ -283,9 +287,10 @@ function scene:create( event )
 	livesText:setFillColor(0, 0, 0)
 	scoreText:setFillColor(0, 0, 0)
 
+	display.currentStage:setFocus(joystick)
+	-- display.currentStage:setFocus(nil)
 
-	attack:addEventListener( "tap", fire )
-	joystick:addEventListener("touch", joystickDetect)
+
 end
 
 
@@ -302,6 +307,8 @@ function scene:show( event )
 		-- Code here runs when the scene is entirely on screen
 		physics.start()
 		Runtime:addEventListener( "collision", onCollision )
+		attack:addEventListener( "tap", fire )
+		joystick:addEventListener("touch", joystickDetect)
 		gameLoopTimer = timer.performWithDelay(25, gameLoop, 0)
 		asteroidTimer = timer.performWithDelay(speedCalc(score), createAsteroid, 0)
 	end
@@ -322,6 +329,8 @@ function scene:hide( event )
 		timer.cancel(gameLoopTimer)
 		timer.cancel(asteroidTimer)
 		Runtime:removeEventListener("collision", onCollision)
+		attack:removeEventListener("tap", fire)
+		joystick:removeEventListener("touch", joystickDetect)
 		physics.pause()
 		composer.removeScene("game")
 	end
