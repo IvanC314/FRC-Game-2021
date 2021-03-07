@@ -19,6 +19,7 @@ local joystick
 local attack
 local energy
 local base
+
 local healthBar
 local energyBar
 local healthFrame
@@ -32,6 +33,7 @@ local asteroidsTable = {}
 local died = false
 local gameLoopTimer
 local asteroidTimer
+local mgTimer
 
 local lives = 100
 local score = 0
@@ -65,7 +67,7 @@ local function fire()
 		newBullet.y = turret.y
 		newBullet:toBack()
 
-		transition.to(newBullet, {y=-40, time = 1200,
+		transition.to(newBullet, {y=0, time = 1200,
 			onComplete = function() display.remove(newBullet) end })
 		ammo = ammo -5
 	end
@@ -98,10 +100,10 @@ local function stopPad()
 end
 
 local function joystickForce()
-	if (joystick.x > display.contentWidth / 5) or (keyRight == true) then
+	if (joystick.x > display.contentWidth / 5) then
 		fx = 12
 		-- print("move right")
-	elseif (joystick.x < display.contentWidth / 5) or (keyLeft == true) then
+	elseif (joystick.x < display.contentWidth / 5) then
 		fx = -12
 		-- print("move left")
 	end
@@ -215,6 +217,37 @@ local function createAsteroid()
 		newAsteroid:applyTorque(math.random(-15, 15))
 	end
 end
+local function createMG()
+	local newMG = display.newImageRect(mainGroup, "images/mg.png", 35, 35)
+	physics.addBody(newMG, "dynamic", {radius = 40, bounce = 0.2})
+	newMG.myName = "MG"
+	newMG.x = math.random(100, display.contentWidth - 100)
+	newMG.y = math.random(-150, -100)
+	-- newAsteroid:setLinearVelocity(0, 80)
+	newMG:applyTorque(5)
+
+	transition.to(newMG, {y=display.contentHeight + 100, time = 5000,
+	onComplete = function() display.remove(newMG) end })
+end
+
+local function fireNoCost()
+
+	local newBullet = display.newImageRect(mainGroup, "images/bullet.png", 30, 30) 
+	physics.addBody(newBullet, "dynamic", {isSensor = true})
+	newBullet:applyTorque(math.random(40, 150))
+
+	newBullet.isBullet = true
+	newBullet.myName = "bullet"
+
+	newBullet.x = turret.x
+	newBullet.y = turret.y
+	newBullet:toBack()
+
+	transition.to(newBullet, {y=0, time = 1100,
+		onComplete = function() display.remove(newBullet) end })
+end
+
+
 
 local function onCollision(event)
     if (event.phase == "began") then
@@ -236,11 +269,18 @@ local function onCollision(event)
             score = score + 1
             scoreText.text = "Score: ".. score
 
+		elseif ((obj1.myName == "MG" and obj2.myName == "bullet") 
+		or (obj1.myName == "bullet" and obj2.myName == "MG"))
+		then 
+			timer.performWithDelay(90, fireNoCost, 65)
+			display.remove(obj1)
+			display.remove(obj2)
         elseif ( ( obj1.myName == "turret" and obj2.myName == "asteroid" ) or
         ( obj1.myName == "asteroid" and obj2.myName == "turret" ) or
 		( obj1.myName == "base" and obj2.myName == "asteroid" ) or
         ( obj1.myName == "asteroid" and obj2.myName == "base" ) )
         then 
+
             if (died == false) then
                 died = true
 
@@ -266,8 +306,9 @@ end
 
 local function gameLoop()
 	limitEnergy()
-	updateText()
 	updateBars()
+
+	updateText()
 
 	joystickForce()
 	turret.x = turret.x + fx
@@ -315,7 +356,7 @@ function scene:create( event )
 
 	base = display.newImageRect(mainGroup, "images/base.png", display.contentWidth, display.contentHeight/9)
 	base.x = display.contentCenterX
-	base.y = display.contentHeight - 60
+	base.y = display.contentHeight - 35
 	physics.addBody(base, "static", {isSensor = true})
 	base.myName = "base"
 
@@ -397,7 +438,9 @@ function scene:show( event )
 		attack:addEventListener( "tap", fire )
 		joystick:addEventListener("touch", joystickDetect)
 		energy:addEventListener("touch", energyPress)
+
 		gameLoopTimer = timer.performWithDelay(25, gameLoop, 0)
+		mgTimer = timer.performWithDelay(math.random(20000, 30000), createMG, 0)
 		asteroidTimer = timer.performWithDelay(speedCalc(score), createAsteroid, 0)
 	end
 end
@@ -417,6 +460,7 @@ function scene:hide( event )
 		timer.cancel(gameLoopTimer)
 		timer.cancel(asteroidTimer)
 		timer.cancel(energyTimer)
+		timer.cancel(createMG)
 		Runtime:removeEventListener("collision", onCollision)
 		attack:removeEventListener("tap", fire)
 		joystick:removeEventListener("touch", joystickDetect)
