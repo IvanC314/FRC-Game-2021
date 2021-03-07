@@ -35,6 +35,7 @@ local gameLoopTimer
 local asteroidTimer
 local mgTimer
 local laserTimer
+local spreadTimer
 
 local lives = 100
 local score = 0
@@ -183,7 +184,7 @@ end
 
 local function endGame()
 	composer.setVariable("finalScore", score)
-	composer.gotoScene("menu")
+	composer.gotoScene("menu", {time = 1000, effect = "crossFade"})
 end
 
 local function speedCalc(x)
@@ -243,9 +244,21 @@ local function spawnLaser()
 	onComplete = function() display.remove(newMG) end })
 end
 
+local function spawnSpread()
+	local newSpread = display.newImageRect(mainGroup, "images/mg.png", 40, 40)
+	physics.addBody(newSpread, "dynamic", {radius = 30, bounce = 0.2})
+	newSpread.myName = "newSpread"
+	newSpread.x = math.random(100, display.contentWidth - 100)
+	newSpread.y = -100
+	newSpread:applyTorque(-5, 5)
+
+	transition.to(newSpread, {y=display.contentHeight + 100, time = 11000,
+	onComplete = function() display.remove(newMG) end })
+end
+
 local function fireNoCost()
 
-	local newBullet = display.newImageRect(mainGroup, "images/bullet.png", 30, 40) 
+	local newBullet = display.newImageRect(mainGroup, "images/bullet.png", 35, 35) 
 	physics.addBody(newBullet, "dynamic", {isSensor = true})
 	-- newBullet:applyTorque(math.random(40, 150))
 
@@ -307,7 +320,22 @@ local function fireLasers()
 	-- end
 end
 
+local function fireSpread()
 
+	local newBullet = display.newImageRect(mainGroup, "images/spread.png", 40, 40) 
+	physics.addBody(newBullet, "dynamic", {isSensor = true})
+	-- newBullet:applyTorque(math.random(40, 150))
+
+	newBullet.isBullet = true
+	newBullet.myName = "bullet"
+
+	newBullet.x = turret.x
+	newBullet.y = turret.y - 50
+	newBullet:toBack()
+
+	transition.to(newBullet, {x = turret.x + math.random(-650, 650), y=0, time = 1100,
+		onComplete = function() display.remove(newBullet) end })
+end
 
 local function onCollision(event)
     if (event.phase == "began") then
@@ -340,6 +368,13 @@ local function onCollision(event)
 		or (obj1.myName == "bullet" and obj2.myName == "newLaser"))
 		then 
 			timer.performWithDelay(1500, fireLasers, 10)
+			display.remove(obj1)
+			display.remove(obj2)
+
+		elseif ((obj1.myName == "newSpread" and obj2.myName == "bullet") 
+		or (obj1.myName == "bullet" and obj2.myName == "newSpread"))
+		then 
+			timer.performWithDelay(50, fireSpread, 65)
 			display.remove(obj1)
 			display.remove(obj2)
 			--laser asteroid collision---
@@ -385,7 +420,7 @@ local function onCollision(event)
 					timer.cancel(energyTimer)
 					turret.alpha = 0
 					display.remove(base)
-					timer.performWithDelay(1200, endGame)
+					endGame()
                 else
                     turret.alpha = .1
 					base.alpha = .01 * lives
@@ -541,8 +576,9 @@ function scene:show( event )
 
 
 		gameLoopTimer = timer.performWithDelay(25, gameLoop, 0)
-		mgTimer = timer.performWithDelay(8000, spawnMG, 0)
-		laserTimer = timer.performWithDelay(5000, spawnLaser, 0)
+		mgTimer = timer.performWithDelay(math.random(20000, 40000), spawnMG, 0)
+		laserTimer = timer.performWithDelay(math.random(35000, 50000), spawnLaser, 0)
+		spreadTimer = timer.performWithDelay(math.random(50000, 60000), spawnSpread, 0)
 		asteroidTimer = timer.performWithDelay(speedCalc(score), createAsteroid, 0)
 	end
 end

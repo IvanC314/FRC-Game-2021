@@ -60,7 +60,7 @@ function scene:create( event )
     background.x = display.contentCenterX
 	background.y = display.contentCenterY
 
-	local playButton = display.newText(sceneGroup, "Play", display.contentCenterX,  (3*display.contentHeight)/8 , native.systemFont, 60)
+	local playButton = display.newText(sceneGroup, "Play", display.contentCenterX,  (3*display.contentHeight)/8 , verdana, 60)
 	playButton:setFillColor(0, 0, 0)
 
 	loadScores()
@@ -73,10 +73,14 @@ function scene:create( event )
 	table.sort(scoresTable, compare)
 	saveScores()
 
-    local highScoresButton = display.newText( sceneGroup, "High Score:".. scoresTable[1], display.contentCenterX, 3* display.contentHeight/4, native.systemFont, 44 )
+    local highScoresButton = display.newText( sceneGroup, "Highscore:".. scoresTable[1], display.contentCenterX, 3* display.contentHeight/4, Verdana, 44 )
 	highScoresButton:setFillColor(0, 0, 0)
-
 	playButton:addEventListener("tap", gotoGame)
+
+
+	local systemFonts = native.getFontNames()
+ 
+-- Set the string to query for (part of the font name to locate)
 
 end
 
