@@ -34,6 +34,7 @@ local died = false
 local gameLoopTimer
 local asteroidTimer
 local mgTimer
+local laserTimer
 
 local lives = 100
 local score = 0
@@ -64,7 +65,7 @@ local function fire()
 		newBullet.myName = "bullet"
 
 		newBullet.x = turret.x
-		newBullet.y = turret.y
+		newBullet.y = turret.y -50
 		newBullet:toBack()
 
 		transition.to(newBullet, {y=0, time = 1200,
@@ -217,34 +218,93 @@ local function createAsteroid()
 		newAsteroid:applyTorque(math.random(-15, 15))
 	end
 end
-local function createMG()
-	local newMG = display.newImageRect(mainGroup, "images/mg.png", 35, 35)
-	physics.addBody(newMG, "dynamic", {radius = 40, bounce = 0.2})
+local function spawnMG()
+	local newMG = display.newImageRect(mainGroup, "images/mg.png", 40, 40)
+	physics.addBody(newMG, "dynamic", {radius = 30, bounce = 0.2})
 	newMG.myName = "MG"
 	newMG.x = math.random(100, display.contentWidth - 100)
 	newMG.y = math.random(-150, -100)
 	-- newAsteroid:setLinearVelocity(0, 80)
 	newMG:applyTorque(5)
 
-	transition.to(newMG, {y=display.contentHeight + 100, time = 5000,
+	transition.to(newMG, {y=display.contentHeight + 100, time = 10000,
+	onComplete = function() display.remove(newMG) end })
+end
+
+local function spawnLaser()
+	local newLaser = display.newImageRect(mainGroup, "images/mg.png", 40, 40)
+	physics.addBody(newLaser, "dynamic", {radius = 30, bounce = 0.2})
+	newLaser.myName = "newLaser"
+	newLaser.x = math.random(100, display.contentWidth - 100)
+	newLaser.y = math.random(-150, -100)
+	newLaser:applyTorque(-5)
+
+	transition.to(newLaser, {y=display.contentHeight + 100, time = 10000,
 	onComplete = function() display.remove(newMG) end })
 end
 
 local function fireNoCost()
 
-	local newBullet = display.newImageRect(mainGroup, "images/bullet.png", 30, 30) 
+	local newBullet = display.newImageRect(mainGroup, "images/bullet.png", 30, 40) 
 	physics.addBody(newBullet, "dynamic", {isSensor = true})
-	newBullet:applyTorque(math.random(40, 150))
+	-- newBullet:applyTorque(math.random(40, 150))
 
 	newBullet.isBullet = true
 	newBullet.myName = "bullet"
 
 	newBullet.x = turret.x
-	newBullet.y = turret.y
+	newBullet.y = turret.y - 50
 	newBullet:toBack()
 
 	transition.to(newBullet, {y=0, time = 1100,
 		onComplete = function() display.remove(newBullet) end })
+end
+
+local function fireLasers()
+	-- local type = math.random(1, 3)
+	-- if type == 1 then
+		local newBullet = display.newImageRect(mainGroup, "images/laser1.png", 30, 700) 
+		physics.addBody(newBullet, "dynamic", {isSensor = true})
+		-- newBullet:applyTorque(math.random(40, 150))
+
+		newBullet.isBullet = true
+		newBullet.myName = "laser"
+
+		newBullet.x = turret.x
+		newBullet.y = turret.y - 400
+		newBullet:toBack()
+
+		transition.to(newBullet, {y=turret.y -400, time = 150,
+			onComplete = function() display.remove(newBullet) end })
+	-- elseif type == 2 then
+	-- 	local newBullet = display.newImageRect(mainGroup, "images/laser2.png", 30, 700) 
+	-- 	physics.addBody(newBullet, "dynamic", {isSensor = true})
+	-- 	-- newBullet:applyTorque(math.random(40, 150))
+
+	-- 	newBullet.isBullet = true
+	-- 	newBullet.myName = "laser"
+
+	-- 	newBullet.x = turret.x
+	-- 	newBullet.y = turret.y - 400
+	-- 	newBullet:toBack()
+
+	-- 	transition.to(newBullet, {y=turret.y -400, time = 150,
+	-- 		onComplete = function() display.remove(newBullet) end })
+	-- elseif type == 3 then
+	-- 	local newBullet = display.newImageRect(mainGroup, "images/laser3.png", 30, 700) 
+	-- 	physics.addBody(newBullet, "dynamic", {isSensor = true})
+	-- 	-- newBullet:applyTorque(math.random(40, 150))
+
+	-- 	newBullet.isBullet = true
+	-- 	newBullet.myName = "laser"
+
+	-- 	newBullet.x = turret.x
+	-- 	newBullet.y = turret.y - 400
+	-- 	newBullet:toBack()
+
+	-- 	transition.to(newBullet, {y=turret.y -400, time = 150,
+	-- 		onComplete = function() display.remove(newBullet) end })
+	-- end
 end
 
 
@@ -268,13 +328,45 @@ local function onCollision(event)
             end
             score = score + 1
             scoreText.text = "Score: ".. score
-
+			-- mg power up--
 		elseif ((obj1.myName == "MG" and obj2.myName == "bullet") 
 		or (obj1.myName == "bullet" and obj2.myName == "MG"))
 		then 
-			timer.performWithDelay(90, fireNoCost, 65)
+			timer.performWithDelay(100, fireNoCost, 65)
 			display.remove(obj1)
 			display.remove(obj2)
+			-- laser power up--
+		elseif ((obj1.myName == "newLaser" and obj2.myName == "bullet") 
+		or (obj1.myName == "bullet" and obj2.myName == "newLaser"))
+		then 
+			timer.performWithDelay(1500, fireLasers, 10)
+			display.remove(obj1)
+			display.remove(obj2)
+			--laser asteroid collision---
+		elseif (obj1.myName == "asteroid" and obj2.myName == "laser") 
+		then 
+			display.remove(obj1)
+			for i = #asteroidsTable, 1, -1 do
+                if(asteroidsTable[i] == obj1 or asteroidsTable[i] == obj2) then
+                    table.remove(asteroidsTable, i)
+                    break
+                end
+            end
+            score = score + 1
+            scoreText.text = "Score: ".. score
+
+		elseif (obj1.myName == "laser" and obj2.myName == "asteroid") 
+		then 
+			display.remove(obj2)
+			for i = #asteroidsTable, 1, -1 do
+                if(asteroidsTable[i] == obj1 or asteroidsTable[i] == obj2) then
+                    table.remove(asteroidsTable, i)
+                    break
+                end
+            end
+            score = score + 1
+            scoreText.text = "Score: ".. score
+
         elseif ( ( obj1.myName == "turret" and obj2.myName == "asteroid" ) or
         ( obj1.myName == "asteroid" and obj2.myName == "turret" ) or
 		( obj1.myName == "base" and obj2.myName == "asteroid" ) or
@@ -291,7 +383,7 @@ local function onCollision(event)
 					timer.cancel(gameLoopTimer)
 					timer.cancel(asteroidTimer)
 					timer.cancel(energyTimer)
-					display.remove(turret)
+					turret.alpha = 0
 					display.remove(base)
 					timer.performWithDelay(1200, endGame)
                 else
@@ -304,9 +396,16 @@ local function onCollision(event)
     end
 end
 
+local function endTimers()
+	if turret.alpha == 0 then
+		timer.cancelAll()
+	end
+end
+
 local function gameLoop()
 	limitEnergy()
 	updateBars()
+
 
 	updateText()
 
@@ -327,7 +426,7 @@ local function gameLoop()
             table.remove(asteroidsTable, i)
         end
     end
-
+	endTimers()
 end
 
 -- -----------------------------------------------------------------------------------
@@ -438,9 +537,12 @@ function scene:show( event )
 		attack:addEventListener( "tap", fire )
 		joystick:addEventListener("touch", joystickDetect)
 		energy:addEventListener("touch", energyPress)
+		-- energy:addEventListener("tap", fireNoCost)
+
 
 		gameLoopTimer = timer.performWithDelay(25, gameLoop, 0)
-		mgTimer = timer.performWithDelay(math.random(20000, 30000), createMG, 0)
+		mgTimer = timer.performWithDelay(8000, spawnMG, 0)
+		laserTimer = timer.performWithDelay(5000, spawnLaser, 0)
 		asteroidTimer = timer.performWithDelay(speedCalc(score), createAsteroid, 0)
 	end
 end
@@ -457,10 +559,11 @@ function scene:hide( event )
 
 	elseif ( phase == "did" ) then
 		-- Code here runs immediately after the scene goes entirely off screen
-		timer.cancel(gameLoopTimer)
-		timer.cancel(asteroidTimer)
-		timer.cancel(energyTimer)
-		timer.cancel(createMG)
+		-- timer.cancel(gameLoopTimer)
+		-- timer.cancel(asteroidTimer)
+		-- timer.cancel(energyTimer)
+		-- timer.cancel(spawnMG)
+		timer.cancelAll()
 		Runtime:removeEventListener("collision", onCollision)
 		attack:removeEventListener("tap", fire)
 		joystick:removeEventListener("touch", joystickDetect)
