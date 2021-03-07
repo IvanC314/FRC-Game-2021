@@ -64,16 +64,13 @@ function scene:create( event )
 	playButton:setFillColor(0, 0, 0)
 
 	loadScores()
-	print(scoresTable)
 
 	table.insert(scoresTable, composer.getVariable("finalScore")) 
 	composer.setVariable("finalScore", 0)
-	print(scoresTable)
 	local function compare(a, b)
 		return a > b
 	end
 	table.sort(scoresTable, compare)
-	print(scoresTables)
 	saveScores()
 
     local highScoresButton = display.newText( sceneGroup, "High Score:".. scoresTable[1], display.contentCenterX, 3* display.contentHeight/4, native.systemFont, 44 )

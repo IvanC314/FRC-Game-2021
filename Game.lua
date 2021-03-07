@@ -18,6 +18,11 @@ local turret
 local joystick
 local attack
 local energy
+local base
+local healthBar
+local energyBar
+local healthFrame
+local energyFrame
 
 local fx
 local joystickOffsetX
@@ -28,7 +33,7 @@ local died = false
 local gameLoopTimer
 local asteroidTimer
 
-local lives = 3
+local lives = 100
 local score = 0
 local ammo = 50
 
@@ -37,13 +42,18 @@ local mainGroup
 local uiGroup
 
 local function updateText()
-    livesText.text = "Lives: " .. lives
+    livesText.text = lives
     scoreText.text = "Score: " .. score
-	ammoText.text = "Energy: " .. ammo
+	ammoText.text = ammo
+end
+
+local function updateBars()
+	healthBar.height = 4.5 * lives
+	energyBar.height = 9 * ammo
 end
 
 local function fire()
-	if ammo -3 > 0 then
+	if ammo -5 >= 0 then
 		local newBullet = display.newImageRect(mainGroup, "images/bullet.png", 40, 40) 
 		physics.addBody(newBullet, "dynamic", {isSensor = true})
 		newBullet:applyTorque(math.random(40, 150))
@@ -57,7 +67,7 @@ local function fire()
 
 		transition.to(newBullet, {y=-40, time = 1200,
 			onComplete = function() display.remove(newBullet) end })
-		ammo = ammo -3
+		ammo = ammo -5
 	end
 end
 
@@ -129,6 +139,12 @@ local function addEnergy()
 	ammo = ammo + 1
 end
 
+local function limitEnergy()
+	if ammo >= 50 then
+		ammo = 50
+	end
+end
+
 local energyTimer = timer.performWithDelay(100, addEnergy, 0)
 
 local function energyPress(event)
@@ -136,7 +152,7 @@ local function energyPress(event)
 	local phase = event.phase
 
 	if("began" == phase) then
-		-- display.currentStage:setFocus(joystick)
+		display.currentStage:setFocus(energy)
 
 		timer.resume(energyTimer)
 
@@ -145,20 +161,20 @@ local function energyPress(event)
 	-- 	ammo = ammo + 1
 		
 	elseif("ended" == phase or "cancelled" == phase) then
-		-- display.currentStage:setFocus(nil)
+		display.currentStage:setFocus(nil)
 		timer.pause(energyTimer)
 	end
 	return true
 end
 
 local function restore()
-    turret.isBodyActive = false
+    -- turret.isBodyActive = false
     -- turret.x = display.contentCenterX
     -- turret.y = display.contentHeight - 100
 
-    transition.to(turret, {alpha = 1, time = 3000, 
+    transition.to(turret, {alpha = 1, time = 1500, 
     onComplete = function() 
-    turret.isBodyActive = true 
+    -- turret.isBodyActive = true 
     died = false end})
 end
 
@@ -221,21 +237,26 @@ local function onCollision(event)
             scoreText.text = "Score: ".. score
 
         elseif ( ( obj1.myName == "turret" and obj2.myName == "asteroid" ) or
-        ( obj1.myName == "asteroid" and obj2.myName == "turret" ) )
+        ( obj1.myName == "asteroid" and obj2.myName == "turret" ) or
+		( obj1.myName == "base" and obj2.myName == "asteroid" ) or
+        ( obj1.myName == "asteroid" and obj2.myName == "base" ) )
         then 
             if (died == false) then
                 died = true
 
-                lives = lives - 1
+                lives = lives - 20
                 livesText.text = "Lives: "..lives
 
                 if (lives == 0) then
 					timer.cancel(gameLoopTimer)
 					timer.cancel(asteroidTimer)
+					timer.cancel(energyTimer)
 					display.remove(turret)
-					timer.performWithDelay(1500, endGame)
+					display.remove(base)
+					timer.performWithDelay(1200, endGame)
                 else
                     turret.alpha = .1
+					base.alpha = .01 * lives
 					restore()
                 end
             end
@@ -244,7 +265,9 @@ local function onCollision(event)
 end
 
 local function gameLoop()
+	limitEnergy()
 	updateText()
+	updateBars()
 
 	joystickForce()
 	turret.x = turret.x + fx
@@ -275,7 +298,6 @@ function scene:create( event )
 
 	local sceneGroup = self.view
 	-- Code here runs when the scene is first created but has not yet appeared on screen
-
 	physics.pause()
 	timer.pause(energyTimer)
 	backGroup = display.newGroup()  -- Display group for the background image
@@ -290,6 +312,12 @@ function scene:create( event )
 	local background = display.newImageRect(backGroup, "images/gameBackground.png", display.contentWidth, display.contentHeight)
 	background.x = display.contentCenterX
 	background.y = display.contentCenterY
+
+	base = display.newImageRect(mainGroup, "images/base.png", display.contentWidth, display.contentHeight/9)
+	base.x = display.contentCenterX
+	base.y = display.contentHeight - 60
+	physics.addBody(base, "static", {isSensor = true})
+	base.myName = "base"
 
 	joystick = display.newImageRect(uiGroup, "images/joystick.png", display.contentWidth / 6, display.contentWidth / 6)
 	physics.addBody( joystick, { bounce = 0, isSensor = true } )
@@ -315,9 +343,33 @@ function scene:create( event )
 	physics.addBody(turret, "dynamic", {radius = 30, isSensor = true})
 	turret.myName = "turret"
 
-	livesText = display.newText(uiGroup, "Lives: " .. lives, display.contentCenterX/6, display.contentCenterY/8, native.systemFont, 36)
-	scoreText = display.newText(uiGroup, "Score: " .. score, display.contentCenterX/6, display.contentCenterY/8 + 50, native.systemFont, 36)
-	ammoText = display.newText(uiGroup, "Energy: " .. ammo, display.contentCenterX/6, display.contentCenterY/8 + 100, native.systemFont, 36)
+	healthBar = display.newImageRect(uiGroup, "images/health.png", display.contentWidth / 50, 450)
+	healthBar.alpha = .7
+	healthBar.anchorY = 1
+	healthBar.x = 25
+	healthBar.y = 600
+
+	healthFrame = display.newImageRect(uiGroup, "images/frame.png", display.contentWidth / 50, 450)
+	healthFrame.alpha = .2
+	healthFrame.anchorY = 1
+	healthFrame.x = 25
+	healthFrame.y = 600
+
+	energyBar = display.newImageRect(uiGroup, "images/energy.png", display.contentWidth / 50, 450)
+	energyBar.alpha = .7
+	energyBar.anchorY = 1
+	energyBar.x = display.contentWidth - 25
+	energyBar.y = 600
+
+	energyFrame = display.newImageRect(uiGroup, "images/frame.png", display.contentWidth / 50, 450)
+	energyFrame.alpha = .2
+	energyFrame.anchorY = 1
+	energyFrame.x = display.contentWidth - 25
+	energyFrame.y = 600
+
+	livesText = display.newText(uiGroup, lives, 27, 130, native.systemFont, 24)
+	scoreText = display.newText(uiGroup, "Score:" .. score, 100, 40, native.systemFont, 36)
+	ammoText = display.newText(uiGroup, ammo, display.contentWidth - 27, 130, native.systemFont, 24)
 	livesText:setFillColor(0, 0, 0)
 	scoreText:setFillColor(0, 0, 0)
 	ammoText:setFillColor(0, 0, 0)
