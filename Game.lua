@@ -58,9 +58,9 @@ end
 
 local function fire()
 	if ammo -5 >= 0 then
-		local newBullet = display.newImageRect(mainGroup, "images/bullet.png", 40, 40) 
+		local newBullet = display.newImageRect(mainGroup, "images/bullet.png", 50, 70) 
 		physics.addBody(newBullet, "dynamic", {isSensor = true})
-		newBullet:applyTorque(math.random(40, 150))
+		-- newBullet:applyTorque(math.random(40, 150))
 
 		newBullet.isBullet = true
 		newBullet.myName = "bullet"
@@ -192,65 +192,65 @@ local function speedCalc(x)
 end
 
 local function createAsteroid()
-	local asteroidType = math.random(1, 2)
-	if (asteroidType == 1) then
-    	local newAsteroid = display.newImageRect(mainGroup, "images/asteroid1.png", 25, 25)
+	-- local asteroidType = math.random(1, 2)
+	-- if (asteroidType == 1) then
+    	local newAsteroid = display.newImageRect(mainGroup, "images/asteroid.png", 30, 50)
     	table.insert(asteroidsTable, newAsteroid)
-    	physics.addBody(newAsteroid, "dynamic", {radius = 40, bounce = 0.2})
     	newAsteroid.myName = "asteroid"
 		newAsteroid.x = math.random(100, display.contentWidth - 100)
 		newAsteroid.y = math.random(-150, -100)
-		local asteroidScale = math.random(3,5)
+		local asteroidScale = math.random(3,6)
+		physics.addBody(newAsteroid, "dynamic", {radius = (25 * asteroidScale / 2), bounce = 0.2})
 		newAsteroid.xScale = asteroidScale
 		newAsteroid.yScale = asteroidScale
 		newAsteroid:setLinearVelocity(0, (6 * math.sqrt(score)) + 25)
-		newAsteroid:applyTorque(math.random(-15, 15))
-	else
-		local newAsteroid = display.newImageRect(mainGroup, "images/asteroid2.png", 25, 25)
-		table.insert(asteroidsTable, newAsteroid)
-    	physics.addBody(newAsteroid, "dynamic", {radius = 40, bounce = 0.2})
-    	newAsteroid.myName = "asteroid"
-		newAsteroid.x = math.random(100, display.contentWidth - 100)
-		newAsteroid.y = math.random(-200, -100)
-		local asteroidScale = math.random(3,5)
-		newAsteroid.xScale = asteroidScale
-		newAsteroid.yScale = asteroidScale
-		newAsteroid:setLinearVelocity(0, (6 * math.sqrt(score)) + 25)
-		newAsteroid:applyTorque(math.random(-15, 15))
-	end
+		-- newAsteroid:applyTorque(math.random(-15, 15))
+	-- else
+	-- 	local newAsteroid = display.newImageRect(mainGroup, "images/asteroid1.png", 25, 30)
+	-- 	table.insert(asteroidsTable, newAsteroid)
+    -- 	physics.addBody(newAsteroid, "dynamic", {radius = 40, bounce = 0.2})
+    -- 	newAsteroid.myName = "asteroid"
+	-- 	newAsteroid.x = math.random(100, display.contentWidth - 100)
+	-- 	newAsteroid.y = math.random(-200, -100)
+	-- 	local asteroidScale = math.random(3,5)
+	-- 	newAsteroid.xScale = asteroidScale
+	-- 	newAsteroid.yScale = asteroidScale
+	-- 	newAsteroid:setLinearVelocity(0, (6 * math.sqrt(score)) + 25)
+	-- 	newAsteroid:applyTorque(math.random(-5, 5))
+	-- end
 end
 local function spawnMG()
-	local newMG = display.newImageRect(mainGroup, "images/mg.png", 40, 40)
+	local newMG = display.newImageRect(mainGroup, "images/mg.png", 60, 60)
 	physics.addBody(newMG, "dynamic", {radius = 30, bounce = 0.2})
 	newMG.myName = "MG"
 	newMG.x = math.random(100, display.contentWidth - 100)
 	newMG.y = math.random(-150, -100)
 	-- newAsteroid:setLinearVelocity(0, 80)
-	newMG:applyTorque(5)
+	-- newMG:applyTorque(5)
 
 	transition.to(newMG, {y=display.contentHeight + 100, time = 10000,
 	onComplete = function() display.remove(newMG) end })
 end
 
 local function spawnLaser()
-	local newLaser = display.newImageRect(mainGroup, "images/mg.png", 40, 40)
+	local newLaser = display.newImageRect(mainGroup, "images/ls.png", 60, 60)
 	physics.addBody(newLaser, "dynamic", {radius = 30, bounce = 0.2})
 	newLaser.myName = "newLaser"
 	newLaser.x = math.random(100, display.contentWidth - 100)
 	newLaser.y = math.random(-150, -100)
-	newLaser:applyTorque(-5)
+	-- newLaser:applyTorque(-5)
 
 	transition.to(newLaser, {y=display.contentHeight + 100, time = 10000,
 	onComplete = function() display.remove(newMG) end })
 end
 
 local function spawnSpread()
-	local newSpread = display.newImageRect(mainGroup, "images/mg.png", 40, 40)
+	local newSpread = display.newImageRect(mainGroup, "images/sp.png", 60, 60)
 	physics.addBody(newSpread, "dynamic", {radius = 30, bounce = 0.2})
 	newSpread.myName = "newSpread"
 	newSpread.x = math.random(100, display.contentWidth - 100)
 	newSpread.y = -100
-	newSpread:applyTorque(-5, 5)
+	-- newSpread:applyTorque(0,5)
 
 	transition.to(newSpread, {y=display.contentHeight + 100, time = 11000,
 	onComplete = function() display.remove(newMG) end })
@@ -258,8 +258,8 @@ end
 
 local function fireNoCost()
 
-	local newBullet = display.newImageRect(mainGroup, "images/bullet.png", 35, 35) 
-	physics.addBody(newBullet, "dynamic", {isSensor = true})
+	local newBullet = display.newImageRect(mainGroup, "images/bullet.png", 40, 60) 
+	physics.addBody(newBullet, "dynamic", {radius = 25, isSensor = true})
 	-- newBullet:applyTorque(math.random(40, 150))
 
 	newBullet.isBullet = true
@@ -276,7 +276,7 @@ end
 local function fireLasers()
 	-- local type = math.random(1, 3)
 	-- if type == 1 then
-		local newBullet = display.newImageRect(mainGroup, "images/laser1.png", 30, 700) 
+		local newBullet = display.newImageRect(mainGroup, "images/laser1.png", 55, 700) 
 		physics.addBody(newBullet, "dynamic", {isSensor = true})
 		-- newBullet:applyTorque(math.random(40, 150))
 
@@ -284,10 +284,10 @@ local function fireLasers()
 		newBullet.myName = "laser"
 
 		newBullet.x = turret.x
-		newBullet.y = turret.y - 400
+		newBullet.y = turret.y - 380
 		newBullet:toBack()
 
-		transition.to(newBullet, {y=turret.y -400, time = 150,
+		transition.to(newBullet, {y=turret.y -375, time = 150,
 			onComplete = function() display.remove(newBullet) end })
 	-- elseif type == 2 then
 	-- 	local newBullet = display.newImageRect(mainGroup, "images/laser2.png", 30, 700) 
@@ -360,7 +360,7 @@ local function onCollision(event)
 		elseif ((obj1.myName == "MG" and obj2.myName == "bullet") 
 		or (obj1.myName == "bullet" and obj2.myName == "MG"))
 		then 
-			timer.performWithDelay(100, fireNoCost, 65)
+			timer.performWithDelay(150, fireNoCost, 65)
 			display.remove(obj1)
 			display.remove(obj2)
 			-- laser power up--
@@ -455,7 +455,8 @@ local function gameLoop()
         local thisAsteroid = asteroidsTable[i]
 
         if(thisAsteroid.x < 0 or 
-            thisAsteroid.x > display.contentWidth)
+            thisAsteroid.x > display.contentWidth or 
+		thisAsteroid.y > display.contentHeight + 100)
         then 
             display.remove(thisAsteroid)
             table.remove(asteroidsTable, i)
@@ -488,9 +489,9 @@ function scene:create( event )
 	background.x = display.contentCenterX
 	background.y = display.contentCenterY
 
-	base = display.newImageRect(mainGroup, "images/base.png", display.contentWidth, display.contentHeight/9)
+	base = display.newImageRect(mainGroup, "images/base.png", display.contentWidth, 75)
 	base.x = display.contentCenterX
-	base.y = display.contentHeight - 35
+	base.y = display.contentHeight - 10
 	physics.addBody(base, "static", {isSensor = true})
 	base.myName = "base"
 
@@ -514,7 +515,7 @@ function scene:create( event )
 
 	turret = display.newImageRect(mainGroup, "images/turret.png", 90, 110)
 	turret.x = display.contentCenterX
-	turret.y = display.contentHeight - 60
+	turret.y = display.contentHeight - 55
 	physics.addBody(turret, "dynamic", {radius = 30, isSensor = true})
 	turret.myName = "turret"
 
@@ -545,13 +546,11 @@ function scene:create( event )
 	livesText = display.newText(uiGroup, lives, 27, 130, native.systemFont, 24)
 	scoreText = display.newText(uiGroup, "Score:" .. score, 100, 40, native.systemFont, 36)
 	ammoText = display.newText(uiGroup, ammo, display.contentWidth - 27, 130, native.systemFont, 24)
-	livesText:setFillColor(0, 0, 0)
-	scoreText:setFillColor(0, 0, 0)
-	ammoText:setFillColor(0, 0, 0)
+	livesText:setFillColor(1, 1, 1)
+	scoreText:setFillColor(1, 1, 1)
+	ammoText:setFillColor(1, 1, 1)
 
 	display.currentStage:setFocus(joystick)
-	-- display.currentStage:setFocus(nil)
-
 
 end
 
@@ -576,9 +575,9 @@ function scene:show( event )
 
 
 		gameLoopTimer = timer.performWithDelay(25, gameLoop, 0)
-		mgTimer = timer.performWithDelay(math.random(20000, 40000), spawnMG, 0)
-		laserTimer = timer.performWithDelay(math.random(35000, 50000), spawnLaser, 0)
-		spreadTimer = timer.performWithDelay(math.random(50000, 60000), spawnSpread, 0)
+		mgTimer = timer.performWithDelay(math.random(40000, 50000), spawnMG, 0)
+		laserTimer = timer.performWithDelay(math.random(50000, 60000), spawnLaser, 0)
+		spreadTimer = timer.performWithDelay(math.random(60000, 70000), spawnSpread, 0)
 		asteroidTimer = timer.performWithDelay(speedCalc(score), createAsteroid, 0)
 	end
 end

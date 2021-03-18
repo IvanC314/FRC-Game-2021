@@ -10,7 +10,7 @@ local scene = composer.newScene()
 
 
 local function gotoGame()
-	composer.gotoScene("game", { time=500, effect="crossFade" })
+	composer.gotoScene("game", { time=100, effect="crossFade" })
 end
 
 local json = require("json")
@@ -56,12 +56,14 @@ function scene:create( event )
 	local sceneGroup = self.view
 	-- Code here runs when the scene is first created but has not yet appeared on screen
 
-	local background = display.newImageRect( sceneGroup, "images/menuBackground.png", display.contentWidth, display.contentHeight )
-    background.x = display.contentCenterX
-	background.y = display.contentCenterY
+	local background = display.newImageRect( sceneGroup, "images/gameBackground.png", display.contentWidth, display.contentHeight )
+    background.x = 0
+	background.y = 0
+	background.xScale = 2
+	background.yScale = 2
 
 	local playButton = display.newText(sceneGroup, "Play", display.contentCenterX,  (3*display.contentHeight)/8 , verdana, 60)
-	playButton:setFillColor(0, 0, 0)
+	playButton:setFillColor(1, 1, 1)
 
 	loadScores()
 
@@ -74,7 +76,7 @@ function scene:create( event )
 	saveScores()
 
     local highScoresButton = display.newText( sceneGroup, "Highscore:".. scoresTable[1], display.contentCenterX, 3* display.contentHeight/4, Verdana, 44 )
-	highScoresButton:setFillColor(0, 0, 0)
+	highScoresButton:setFillColor(1, 1, 1)
 	playButton:addEventListener("tap", gotoGame)
 
 
