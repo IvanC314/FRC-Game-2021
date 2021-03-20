@@ -9,8 +9,8 @@ local scene = composer.newScene()
 -- -----------------------------------------------------------------------------------
 
 
-local function gotoGame()
-	composer.gotoScene("game", { time=100, effect="crossFade" })
+local function gotoMenu()
+	composer.gotoScene("menu", { time=100, effect="crossFade" })
 end
 
 local json = require("json")
@@ -62,8 +62,8 @@ function scene:create( event )
 	background.xScale = 2
 	background.yScale = 2
 
-	local playButton = display.newText(sceneGroup, "Play", display.contentCenterX,  (3*display.contentHeight)/8 , verdana, 60)
-	playButton:setFillColor(1, 1, 1)
+	local backButton = display.newText(sceneGroup, "Menu", 100,  100 , verdana, 60)
+	backButton:setFillColor(1, 1, 1)
 
 	loadScores()
 
@@ -85,7 +85,7 @@ function scene:create( event )
 
     local highScoresButton = display.newText( sceneGroup, "Highscore:".. scoresTable[1], display.contentCenterX, 3* display.contentHeight/4, Verdana, 44 )
 	highScoresButton:setFillColor(1, 1, 1)
-	playButton:addEventListener("tap", gotoGame)
+	backButton:addEventListener("tap", gotoGame)
 
 
     local coinsText = display.newText( sceneGroup, "Coins:".. scoresTable[2], display.contentCenterX, display.contentHeight - 100, Verdana, 44 )
