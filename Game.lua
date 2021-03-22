@@ -14,6 +14,8 @@ physics.setGravity(0, 0)
  
 math.randomseed(os.time())
 
+system.activate( "multitouch" )
+
 local turret
 local joystick
 local attack
@@ -87,14 +89,14 @@ local function stopTurret()
 end
 
 local function stopPad()
-	if joystick.x >= (2 * display.contentWidth / 5) then
-		joystick.x = (2 * display.contentWidth / 5)
+	if joystick.x >= (4 * display.contentWidth / 5) then
+		joystick.x = (4 * display.contentWidth / 5)
 	end
 	if joystick.x <= 0 then
 		joystick.x = 0
 	end
-	if joystick.y <= display.contentHeight / 2 then 
-		joystick.y = display.contentHeight / 2
+	if joystick.y <= display.contentHeight / 4 then 
+		joystick.y = display.contentHeight / 4
 	end
 	if joystick.y >= display.contentHeight then
 		joystick.y = display.contentHeight
@@ -120,21 +122,27 @@ local function joystickDetect(event)
 	local phase = event.phase
 
 	if("began" == phase) then
-		display.currentStage:setFocus(joystick)
-		joystickOffsetX = event.x - joystick.x
-		joystickOffsetY = event.y - joystick.y
+		-- display.currentStage:setFocus(joystick)
+		-- joystickOffsetX = event.x - joystick.x
+		-- joystickOffsetY = event.y - joystick.y
+		joystick.x = event.x
+		joystick.y = event.y
 
 	elseif ("moved" == phase) then
-		joystick.x = event.x - joystickOffsetX
-		joystick.y = event.y - joystickOffsetY
+		-- joystick.x = event.x - joystickOffsetX
+		-- joystick.y = event.y - joystickOffsetY
+
+		joystick.x = event.x
+		joystick.y = event.y
 
 		stopPad()
 		
 	elseif("ended" == phase or "cancelled" == phase) then
-		display.currentStage:setFocus(nil)
+		-- display.currentStage:setFocus(nil)
 		joystick.x = display.contentWidth / 5
 		joystick.y = 3 * display.contentHeight / 4
 		fx = 0 
+		print("canceled")
 	end
 	return true
 end
@@ -550,7 +558,7 @@ function scene:create( event )
 	scoreText:setFillColor(1, 1, 1)
 	ammoText:setFillColor(1, 1, 1)
 
-	display.currentStage:setFocus(joystick)
+	-- display.currentStage:setFocus(joystick)
 
 end
 

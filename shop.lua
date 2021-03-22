@@ -13,38 +13,7 @@ local function gotoMenu()
 	composer.gotoScene("menu", { time=100, effect="crossFade" })
 end
 
-local json = require("json")
-
-local scoresTable = {0,0}
-
-local filePath = system.pathForFile("scores.json", system.DocumentsDirectory)
-
-local function loadScores()
-	local file = io.open(filePath, "r")
-
-	if file then
-		local contents = file:read("*a")
-		io.close(file)
-		scoresTable = json.decode(contents)
-	end
-
-	if (scoresTable == nil or #scoresTable == 0 or #scoresTable == 1) then
-		scoresTable = {0, 0}
-	end
-
-end
-
-local function saveScores()
-
-
-	local file = io.open(filePath, "w")
-
-	if file then
-		file:write(json.encode(scoresTable))
-		io.close(file)
-	end
-end
-
+-- local coins = composer.getVariable("coins")
 
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
@@ -62,39 +31,18 @@ function scene:create( event )
 	background.xScale = 2
 	background.yScale = 2
 
-	local backButton = display.newText(sceneGroup, "Menu", 100,  100 , verdana, 60)
+	local backButton = display.newText(sceneGroup, "Back", 100,  100 , verdana, 50)
 	backButton:setFillColor(1, 1, 1)
-
-	loadScores()
-
-	if (composer.getVariable("finalScore") ~= nil) then 
-
-		if (composer.getVariable("finalScore") >= scoresTable[1]) then
-			scoresTable[1] = composer.getVariable("finalScore")
-		end
-
-		scoresTable[2] = scoresTable[2] + composer.getVariable("finalScore")
-
-	end
-	-- table.insert(scoresTable, composer.getVariable("finalScore")) 
-	
-	composer.setVariable("finalScore", 0)
-	
-	-- table.sort(scoresTable, compare)
-	saveScores()
-
-    local highScoresButton = display.newText( sceneGroup, "Highscore:".. scoresTable[1], display.contentCenterX, 3* display.contentHeight/4, Verdana, 44 )
-	highScoresButton:setFillColor(1, 1, 1)
-	backButton:addEventListener("tap", gotoGame)
+	backButton:addEventListener("tap", gotoMenu)
 
 
-    local coinsText = display.newText( sceneGroup, "Coins:".. scoresTable[2], display.contentCenterX, display.contentHeight - 100, Verdana, 44 )
+	local coins = composer.getVariable("coins")
+
+    local coinsText = display.newText( sceneGroup, "Coins:".. coins, display.contentCenterX, 100, Verdana, 44 )
 	coinsText:setFillColor(1, 1, 1)
 
 
-	local systemFonts = native.getFontNames()
  
--- Set the string to query for (part of the font name to locate)
 
 end
 
@@ -126,7 +74,7 @@ function scene:hide( event )
 
 	elseif ( phase == "did" ) then
 		-- Code here runs immediately after the scene goes entirely off screen
-		composer.removeScene("menu")
+		composer.removeScene("shop")
 	end
 end
 

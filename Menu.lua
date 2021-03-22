@@ -13,6 +13,8 @@ local function gotoGame()
 	composer.gotoScene("game", { time=100, effect="crossFade" })
 end
 
+
+
 local json = require("json")
 
 local scoresTable = {0,0}
@@ -45,7 +47,10 @@ local function saveScores()
 	end
 end
 
-
+local function gotoShop()
+	composer.setVariable("coins", scoresTable[2])
+	composer.gotoScene("shop", { time = 100, effect = "crossFade"})
+end
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
@@ -64,6 +69,8 @@ function scene:create( event )
 
 	local playButton = display.newText(sceneGroup, "Play", display.contentCenterX,  (3*display.contentHeight)/8 , verdana, 60)
 	playButton:setFillColor(1, 1, 1)
+	playButton:addEventListener("tap", gotoGame)
+
 
 	loadScores()
 
@@ -85,7 +92,10 @@ function scene:create( event )
 
     local highScoresButton = display.newText( sceneGroup, "Highscore:".. scoresTable[1], display.contentCenterX, 3* display.contentHeight/4, Verdana, 44 )
 	highScoresButton:setFillColor(1, 1, 1)
-	playButton:addEventListener("tap", gotoGame)
+
+
+	local shopButton = display.newText(sceneGroup, "Upgrades", display.contentCenterX, 450, Verdana, 44)
+	shopButton:addEventListener("tap", gotoShop)
 
 
     local coinsText = display.newText( sceneGroup, "Coins:".. scoresTable[2], display.contentCenterX, display.contentHeight - 100, Verdana, 44 )
