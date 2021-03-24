@@ -200,8 +200,8 @@ local function speedCalc(x)
 end
 
 local function createAsteroid()
-	-- local asteroidType = math.random(1, 2)
-	-- if (asteroidType == 1) then
+	local asteroidType = math.random(1, 3)
+	if (asteroidType == 1) then
     	local newAsteroid = display.newImageRect(mainGroup, "images/asteroid.png", 30, 50)
     	table.insert(asteroidsTable, newAsteroid)
     	newAsteroid.myName = "asteroid"
@@ -212,20 +212,29 @@ local function createAsteroid()
 		newAsteroid.xScale = asteroidScale
 		newAsteroid.yScale = asteroidScale
 		newAsteroid:setLinearVelocity(0, (6 * math.sqrt(score)) + 25)
-		-- newAsteroid:applyTorque(math.random(-15, 15))
-	-- else
-	-- 	local newAsteroid = display.newImageRect(mainGroup, "images/asteroid1.png", 25, 30)
-	-- 	table.insert(asteroidsTable, newAsteroid)
-    -- 	physics.addBody(newAsteroid, "dynamic", {radius = 40, bounce = 0.2})
-    -- 	newAsteroid.myName = "asteroid"
-	-- 	newAsteroid.x = math.random(100, display.contentWidth - 100)
-	-- 	newAsteroid.y = math.random(-200, -100)
-	-- 	local asteroidScale = math.random(3,5)
-	-- 	newAsteroid.xScale = asteroidScale
-	-- 	newAsteroid.yScale = asteroidScale
-	-- 	newAsteroid:setLinearVelocity(0, (6 * math.sqrt(score)) + 25)
-	-- 	newAsteroid:applyTorque(math.random(-5, 5))
-	-- end
+	elseif (asteroidType == 2) then
+		local newAsteroid = display.newImageRect(mainGroup, "images/asteroid2.png", 30, 50)
+		table.insert(asteroidsTable, newAsteroid)
+    	physics.addBody(newAsteroid, "dynamic", {radius = 30, bounce = 0.2})
+    	newAsteroid.myName = "asteroid"
+		newAsteroid.x = math.random(100, display.contentWidth - 100)
+		newAsteroid.y = math.random(-200, -100)
+		local asteroidScale = math.random(3,5)
+		newAsteroid.xScale = asteroidScale
+		newAsteroid.yScale = asteroidScale
+		newAsteroid:setLinearVelocity(0, (6 * math.sqrt(score)) + 25)
+	else
+		local newAsteroid = display.newImageRect(mainGroup, "images/asteroid3.png", 30, 50)
+		table.insert(asteroidsTable, newAsteroid)
+    	physics.addBody(newAsteroid, "dynamic", {radius = 30, bounce = 0.2})
+    	newAsteroid.myName = "asteroid"
+		newAsteroid.x = math.random(100, display.contentWidth - 100)
+		newAsteroid.y = math.random(-200, -100)
+		local asteroidScale = math.random(3,5)
+		newAsteroid.xScale = asteroidScale
+		newAsteroid.yScale = asteroidScale
+		newAsteroid:setLinearVelocity(0, (6 * math.sqrt(score)) + 25)
+	end
 end
 local function spawnMG()
 	local newMG = display.newImageRect(mainGroup, "images/mg.png", 60, 60)
@@ -522,7 +531,7 @@ function scene:create( event )
 	energy.alpha = .3
 
 	turret = display.newImageRect(mainGroup, "images/turret.png", 90, 110)
-	turret.x = display.contentCenterX
+	turret.x = display.contentCenterX + 5
 	turret.y = display.contentHeight - 55
 	physics.addBody(turret, "dynamic", {radius = 30, isSensor = true})
 	turret.myName = "turret"

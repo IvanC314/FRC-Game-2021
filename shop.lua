@@ -9,11 +9,32 @@ local scene = composer.newScene()
 -- -----------------------------------------------------------------------------------
 
 
+
+
+local coins = composer.getVariable("coins")
+
+local function addCoins()
+	coins = coins + 10
+end
+
+local function subCoins()
+	coins = coins - 10
+end
+
+local function updateText()
+	coinsText.text = "Coins:"..coins
+end
+
+local function gameLoop()
+	updateText()
+end
+
 local function gotoMenu()
+	composer.setVariable("coins", coins)
 	composer.gotoScene("menu", { time=100, effect="crossFade" })
 end
 
--- local coins = composer.getVariable("coins")
+local gameLoopTimer
 
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
@@ -31,18 +52,22 @@ function scene:create( event )
 	background.xScale = 2
 	background.yScale = 2
 
-	local backButton = display.newText(sceneGroup, "Back", 100,  100 , verdana, 50)
+	local backButton = display.newText(sceneGroup, "Back", 100,  75 , verdana, 50)
 	backButton:setFillColor(1, 1, 1)
 	backButton:addEventListener("tap", gotoMenu)
 
+	local sub = display.newRect( 300, 250, 100, 100 )
+	sub:setFillColor( 1, 0, 0.3 )
+	
+	local add = display.newRect(700, 250, 100, 100 )
+	add:setFillColor( 0, 1, 0.3 )
 
-	local coins = composer.getVariable("coins")
-
-    local coinsText = display.newText( sceneGroup, "Coins:".. coins, display.contentCenterX, 100, Verdana, 44 )
+    coinsText = display.newText( sceneGroup, "Coins:".. coins, display.contentCenterX, 100, Verdana, 44 )
 	coinsText:setFillColor(1, 1, 1)
 
 
- 
+	sub:addEventListener("tap", subCoins)
+	add:addEventListener("tap", addCoins)
 
 end
 
@@ -58,7 +83,7 @@ function scene:show( event )
 
 	elseif ( phase == "did" ) then
 		-- Code here runs when the scene is entirely on screen
-
+		gameLoopTimer = timer.performWithDelay(50, gameLoop, 0)
 	end
 end
 
@@ -74,7 +99,9 @@ function scene:hide( event )
 
 	elseif ( phase == "did" ) then
 		-- Code here runs immediately after the scene goes entirely off screen
+		-- composer.removeScene("shop")
 		composer.removeScene("shop")
+		timer.cancelAll()
 	end
 end
 

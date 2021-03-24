@@ -34,6 +34,7 @@ local function loadScores()
 		scoresTable = {0, 0}
 	end
 
+	print("scores loaded")
 end
 
 local function saveScores()
@@ -45,6 +46,7 @@ local function saveScores()
 		file:write(json.encode(scoresTable))
 		io.close(file)
 	end
+	print("scores saved")
 end
 
 local function gotoShop()
@@ -84,6 +86,9 @@ function scene:create( event )
 
 	end
 	-- table.insert(scoresTable, composer.getVariable("finalScore")) 
+	if (composer.getVariable("coins") ~= nil) then 
+		scoresTable[2] = composer.getVariable("coins")
+	end
 	
 	composer.setVariable("finalScore", 0)
 	
