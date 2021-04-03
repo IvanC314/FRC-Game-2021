@@ -17,7 +17,7 @@ end
 
 local json = require("json")
 
-local scoresTable = {0,0}
+local scoresTable = {}
 
 local filePath = system.pathForFile("scores.json", system.DocumentsDirectory)
 
@@ -30,8 +30,8 @@ local function loadScores()
 		scoresTable = json.decode(contents)
 	end
 
-	if (scoresTable == nil or #scoresTable == 0 or #scoresTable == 1) then
-		scoresTable = {0, 0}
+	if (scoresTable == nil or #scoresTable == 0 or #scoresTable < 5) then
+		scoresTable = {0, 0, 1, 1, 1}
 	end
 
 	print("scores loaded")
@@ -51,6 +51,10 @@ end
 
 local function gotoShop()
 	composer.setVariable("coins", scoresTable[2])
+	composer.setVariable("healthLevel", scoresTable[3])
+	composer.setVariable("energyLevel", scoresTable[4])
+	composer.setVariable("chargeLevel", scoresTable[5])
+
 	composer.gotoScene("shop", { time = 100, effect = "crossFade"})
 end
 -- -----------------------------------------------------------------------------------
@@ -88,6 +92,18 @@ function scene:create( event )
 	-- table.insert(scoresTable, composer.getVariable("finalScore")) 
 	if (composer.getVariable("coins") ~= nil) then 
 		scoresTable[2] = composer.getVariable("coins")
+	end
+
+	if (composer.getVariable("healthLevel") ~= nil) then 
+		scoresTable[3] = composer.getVariable("healthLevel")
+	end
+
+	if (composer.getVariable("energyLevel") ~= nil) then 
+		scoresTable[4] = composer.getVariable("energyLevel")
+	end
+
+	if (composer.getVariable("chargeLevel") ~= nil) then 
+		scoresTable[5] = composer.getVariable("chargeLevel")
 	end
 	
 	composer.setVariable("finalScore", 0)
