@@ -9,9 +9,7 @@ local scene = composer.newScene()
 -- -----------------------------------------------------------------------------------
 
 
-local function gotoGame()
-	composer.gotoScene("game", { time=100, effect="crossFade" })
-end
+
 
 
 
@@ -56,6 +54,13 @@ local function gotoShop()
 	composer.setVariable("chargeLevel", scoresTable[5])
 
 	composer.gotoScene("shop", { time = 100, effect = "crossFade"})
+end
+
+local function gotoGame()
+	composer.setVariable("healthLevel", scoresTable[3])
+	composer.setVariable("energyLevel", scoresTable[4])
+	composer.setVariable("chargeLevel", scoresTable[5])
+	composer.gotoScene("game", { time=100, effect="crossFade" })
 end
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
