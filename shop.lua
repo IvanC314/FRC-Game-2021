@@ -27,6 +27,23 @@ end
 
 local function updateText()
 	coinsText.text = "Coins:"..coins
+	if (maxHP != 11) then
+		hpText.text = "HP Lv ".. maxHP
+	else
+		hpText.text = "HP Max"
+	end
+
+	if (maxEnergy != 9) then
+		energyText.text = "Energy Lv ".. maxEnergy
+	else
+		hpText.text = "HP Max"
+	end
+
+	if (chargeSpeed != 5) then
+		chargeText.text = "Charge Lv ".. chargeSpeed
+	else
+		hpText.text = "HP Max"
+	end
 end
 
 local function gameLoop()
