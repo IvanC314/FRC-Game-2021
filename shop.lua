@@ -27,27 +27,34 @@ end
 
 local function updateText()
 	coinsText.text = "Coins:"..coins
-	if (maxHP != 11) then
+	if (maxHP ~= 11) then
 		hpText.text = "HP Lv ".. maxHP
 	else
 		hpText.text = "HP Max"
 	end
 
-	if (maxEnergy != 9) then
+	if (maxEnergy ~= 9) then
 		energyText.text = "Energy Lv ".. maxEnergy
 	else
-		hpText.text = "HP Max"
+		energyText.text = "Energy Max"
 	end
 
-	if (chargeSpeed != 5) then
+	if (chargeSpeed ~= 5) then
 		chargeText.text = "Charge Lv ".. chargeSpeed
 	else
-		hpText.text = "HP Max"
+		chargeText.text = "Charge Max"
 	end
+end
+
+local function updateColors()
+	upgrade1.height = 375/11 * maxHP
+	upgrade2.height = 375/9 * maxEnergy
+	upgrade3.height = 375/5 * chargeSpeed
 end
 
 local function gameLoop()
 	updateText()
+	updateColors()
 end
 
 local function buyHP()
@@ -116,8 +123,32 @@ function scene:create( event )
     coinsText = display.newText( sceneGroup, "Coins:".. coins, display.contentCenterX, 75, Verdana, 44 )
 	coinsText:setFillColor(1, 1, 1)
 
-	local help = display.newText( sceneGroup, "All upgrades cost 25 coins", 1050, 75, Verdana, 25 )
+	local help = display.newText( sceneGroup, "(All upgrades cost 25 coins)", 1050, 75, Verdana, 25 )
 	coinsText:setFillColor(1, 1, 1)
+	-- colors for upgrades
+	upgrade1 = display.newImageRect(sceneGroup, "images/shopHP.png", 150, 375/11 * maxHP)
+	upgrade1.x = 200
+	upgrade1.y = 375
+
+	upgrade2 = display.newImageRect(sceneGroup, "images/shopE.png", 150, 375/9 * maxEnergy)
+	upgrade2.x = display.contentCenterX
+	upgrade2.y = 375
+
+	upgrade3 = display.newImageRect(sceneGroup, "images/shopC.png", 150, 375/5 * chargeSpeed)
+	upgrade3.x = display.contentWidth - 200
+	upgrade3.y = 375
+	-- frames for upgrades
+	local frame1 = display.newImageRect(sceneGroup, "images/frame.png", 150, 375)
+	frame1.x = 200
+	frame1.y = 375
+
+	local frame2 = display.newImageRect(sceneGroup, "images/frame.png", 150, 375)
+	frame2.x = display.contentCenterX
+	frame2.y = 375
+
+	local frame3 = display.newImageRect(sceneGroup, "images/frame.png", 150, 375)
+	frame3.x = display.contentWidth - 200
+	frame3.y = 375
 
 
 	HPbuy = display.newImageRect( sceneGroup, "images/buy.png", 90 , 58 )
@@ -132,14 +163,32 @@ function scene:create( event )
 	chargeBuy.x = display.contentWidth - 200
 	chargeBuy.y = 600
 
-    hpText = display.newText( sceneGroup, "HP Lv ".. maxHP, 200, 150, Verdana, 44 )
-	hpText:setFillColor(1, 1, 1)
 
-	energyText = display.newText( sceneGroup, "Energy Lv ".. maxEnergy, display.contentCenterX, 150, Verdana, 44 )
-	energyText:setFillColor(1, 1, 1)
 
-	chargeText = display.newText( sceneGroup, "Charge Lv ".. chargeSpeed, display.contentWidth - 200, 150, Verdana, 44 )
-	chargeText:setFillColor(1, 1, 1)
+	if (maxHP ~= 11) then
+		hpText = display.newText( sceneGroup, "HP Lv ".. maxHP, 200, 150, Verdana, 44 )
+		hpText:setFillColor(1, 1, 1)	
+	else
+		hpText = display.newText( sceneGroup, "HP Max", 200, 150, Verdana, 44 )
+		hpText:setFillColor(1, 1, 1)
+	end
+
+	if (maxEnergy ~= 9) then
+		energyText = display.newText( sceneGroup, "Energy Lv ".. maxEnergy, display.contentCenterX, 150, Verdana, 44 )
+		energyText:setFillColor(1, 1, 1)	
+	else
+		energyText = display.newText( sceneGroup, "Energy Max", display.contentCenterX, 150, Verdana, 44 )
+		energyText:setFillColor(1, 1, 1)
+	end
+ 
+	if (chargeSpeed ~= 5) then
+		chargeText = display.newText( sceneGroup, "Charge Lv ".. chargeSpeed, display.contentWidth - 200, 150, Verdana, 44 )
+		chargeText:setFillColor(1, 1, 1)
+	else
+		chargeText = display.newText( sceneGroup, "Charge Max", display.contentWidth - 200, 150, Verdana, 44 )
+		chargeText:setFillColor(1, 1, 1)
+	end
+
 
 	sub:addEventListener("tap", subCoins)
 	add:addEventListener("tap", addCoins)

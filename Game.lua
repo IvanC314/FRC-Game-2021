@@ -39,10 +39,15 @@ local mgTimer
 local laserTimer
 local spreadTimer
 
-local lives = 100
-local score = 0
-local ammo = 50
 
+local lives = 50 + (20 * (composer.getVariable("healthLevel") - 1))
+local livesLimit = 50 + (20 * (composer.getVariable("healthLevel") - 1))
+local score = 0
+
+local ammo = 50 + (25 * (composer.getVariable("energyLevel") - 1))
+local ammoLimit = 50 + (25 * (composer.getVariable("energyLevel") - 1))
+
+local chargeRate = composer.getVariable("chargeLevel")
 local backGroup
 local mainGroup
 local uiGroup
@@ -54,8 +59,8 @@ local function updateText()
 end
 
 local function updateBars()
-	healthBar.height = 4.5 * lives
-	energyBar.height = 9 * ammo
+	healthBar.height = 450/livesLimit * lives
+	energyBar.height = 450/ammoLimit * ammo
 end
 
 local function fire()
@@ -148,12 +153,12 @@ local function joystickDetect(event)
 end
 
 local function addEnergy()
-	ammo = ammo + 1
+	ammo = ammo + chargeRate
 end
 
 local function limitEnergy()
-	if ammo >= 50 then
-		ammo = 50
+	if ammo >= ammoLimit  then
+		ammo = ammoLimit
 	end
 end
 
@@ -440,7 +445,7 @@ local function onCollision(event)
 					endGame()
                 else
                     turret.alpha = .1
-					base.alpha = .01 * lives
+					base.alpha = 1/livesLimit * lives
 					restore()
                 end
             end
