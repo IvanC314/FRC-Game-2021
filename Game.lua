@@ -39,6 +39,12 @@ local mgTimer
 local laserTimer
 local spreadTimer
 
+local backgroundSound
+local explosionSound
+local hurtSound
+local laserSound
+local powerupSound
+local shootSound
 
 local lives = 50 + (20 * (composer.getVariable("healthLevel") - 1))
 local livesLimit = 50 + (20 * (composer.getVariable("healthLevel") - 1))
@@ -79,6 +85,8 @@ local function fire()
 		transition.to(newBullet, {y=0, time = 1200,
 			onComplete = function() display.remove(newBullet) end })
 		ammo = ammo -5
+
+		audio.play(shootSound)
 	end
 end
 
@@ -263,7 +271,8 @@ local function spawnLaser()
 	-- newLaser:applyTorque(-5)
 
 	transition.to(newLaser, {y=display.contentHeight + 100, time = 10000,
-	onComplete = function() display.remove(newMG) end })
+	onComplete = function() display.remove(newLaser) end })
+
 end
 
 local function spawnSpread()
@@ -293,6 +302,7 @@ local function fireNoCost()
 
 	transition.to(newBullet, {y=0, time = 1100,
 		onComplete = function() display.remove(newBullet) end })
+	audio.play(shootSound)
 end
 
 local function fireLasers()
@@ -340,6 +350,7 @@ local function fireLasers()
 	-- 	transition.to(newBullet, {y=turret.y -400, time = 150,
 	-- 		onComplete = function() display.remove(newBullet) end })
 	-- end
+	audio.play(laserSound)
 end
 
 local function fireSpread()
@@ -357,6 +368,7 @@ local function fireSpread()
 
 	transition.to(newBullet, {x = turret.x + math.random(-650, 650), y=0, time = 1100,
 		onComplete = function() display.remove(newBullet) end })
+	audio.play(shootSound)
 end
 
 local function onCollision(event)
@@ -369,7 +381,7 @@ local function onCollision(event)
         then 
             display.remove(obj1)
             display.remove(obj2)
-
+			audio.play(explosionSound)
             for i = #asteroidsTable, 1, -1 do
                 if(asteroidsTable[i] == obj1 or asteroidsTable[i] == obj2) then
                     table.remove(asteroidsTable, i)
@@ -385,6 +397,7 @@ local function onCollision(event)
 			timer.performWithDelay(150, fireNoCost, 65)
 			display.remove(obj1)
 			display.remove(obj2)
+			audio.play(powerupSound)
 			-- laser power up--
 		elseif ((obj1.myName == "newLaser" and obj2.myName == "bullet") 
 		or (obj1.myName == "bullet" and obj2.myName == "newLaser"))
@@ -392,17 +405,19 @@ local function onCollision(event)
 			timer.performWithDelay(1500, fireLasers, 10)
 			display.remove(obj1)
 			display.remove(obj2)
-
+			audio.play(powerupSound)
 		elseif ((obj1.myName == "newSpread" and obj2.myName == "bullet") 
 		or (obj1.myName == "bullet" and obj2.myName == "newSpread"))
 		then 
 			timer.performWithDelay(50, fireSpread, 65)
 			display.remove(obj1)
 			display.remove(obj2)
+			audio.play(powerupSound)
 			--laser asteroid collision---
 		elseif (obj1.myName == "asteroid" and obj2.myName == "laser") 
 		then 
 			display.remove(obj1)
+			audio.play(explosionSound)
 			for i = #asteroidsTable, 1, -1 do
                 if(asteroidsTable[i] == obj1 or asteroidsTable[i] == obj2) then
                     table.remove(asteroidsTable, i)
@@ -415,6 +430,7 @@ local function onCollision(event)
 		elseif (obj1.myName == "laser" and obj2.myName == "asteroid") 
 		then 
 			display.remove(obj2)
+			audio.play(explosionSound)
 			for i = #asteroidsTable, 1, -1 do
                 if(asteroidsTable[i] == obj1 or asteroidsTable[i] == obj2) then
                     table.remove(asteroidsTable, i)
@@ -429,14 +445,14 @@ local function onCollision(event)
 		( obj1.myName == "base" and obj2.myName == "asteroid" ) or
         ( obj1.myName == "asteroid" and obj2.myName == "base" ) )
         then 
-
+			audio.play(hurtSound)
             if (died == false) then
                 died = true
 
                 lives = lives - 20
                 livesText.text = "Lives: "..lives
 
-                if (lives == 0) then
+                if (lives <= 0) then
 					timer.cancel(gameLoopTimer)
 					timer.cancel(asteroidTimer)
 					timer.cancel(energyTimer)
@@ -486,6 +502,7 @@ local function gameLoop()
     end
 	endTimers()
 end
+
 
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
@@ -573,7 +590,13 @@ function scene:create( event )
 	ammoText:setFillColor(1, 1, 1)
 
 	-- display.currentStage:setFocus(joystick)
+	backgroundSound = audio.loadStream("sounds/gameBack.wav")
 
+	explosionSound = audio.loadSound("sounds/explosion.wav")
+	hurtSound = audio.loadSound("sounds/hurt.wav")
+	laserSound = audio.loadSound("sounds/laser.wav")
+	powerupSound = audio.loadSound("sounds/powerup.wav")
+	shootSound = audio.loadSound("sounds/shoot.wav")
 end
 
 
@@ -601,7 +624,11 @@ function scene:show( event )
 		laserTimer = timer.performWithDelay(math.random(50000, 60000), spawnLaser, 0)
 		spreadTimer = timer.performWithDelay(math.random(60000, 70000), spawnSpread, 0)
 		asteroidTimer = timer.performWithDelay(speedCalc(score), createAsteroid, 0)
+	
+		audio.play(backgroundSound, {channel = 1, loops = -1})
+
 	end
+
 end
 
 
@@ -626,6 +653,8 @@ function scene:hide( event )
 		joystick:removeEventListener("touch", joystickDetect)
 		energy:removeEventListener("touch", energyPress)
 		physics.pause()
+		audio.stop(1)
+
 		composer.removeScene("game")
 	end
 end
@@ -636,6 +665,12 @@ function scene:destroy( event )
 
 	local sceneGroup = self.view
 	-- Code here runs prior to the removal of scene's view
+	audio.dispose(backgroundSound)
+	audio.dispose(explosionSound)
+	audio.dispose(hurtSound)
+	audio.dispose(laserSound)
+	audio.dispose(powerupSound)
+	audio.dispose(shootSound)
 
 end
 

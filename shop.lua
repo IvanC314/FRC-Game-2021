@@ -16,6 +16,9 @@ local maxHP = composer.getVariable("healthLevel")
 local maxEnergy = composer.getVariable("energyLevel")
 local chargeSpeed = composer.getVariable("chargeLevel")
 
+local backgroundSound
+local upgradeSound
+local selectSound
 
 local function addCoins()
 	coins = coins + 10
@@ -61,6 +64,7 @@ local function buyHP()
 	if (coins >= 25 and maxHP < 11) then
 		coins = coins - 25
 		maxHP = maxHP + 1
+		audio.play(upgradeSound)
 	end
 end
 
@@ -68,6 +72,8 @@ local function buyEnergy()
 	if (coins >= 25 and maxEnergy < 9) then
 		coins = coins - 25
 		maxEnergy = maxEnergy + 1
+		audio.play(upgradeSound)
+
 	end
 end
 
@@ -76,11 +82,14 @@ local function buyCharge()
 	if (coins >= 25 and chargeSpeed < 5) then
 		coins = coins - 25
 		chargeSpeed = chargeSpeed + 1
+		audio.play(upgradeSound)
+
 	end
 end
 
 
 local function gotoMenu()
+	audio.play(selectSound)
 	composer.setVariable("coins", coins)
 	composer.setVariable("healthLevel", maxHP)
 	composer.setVariable("energyLevel", maxEnergy)
@@ -89,6 +98,7 @@ local function gotoMenu()
 end
 
 local gameLoopTimer
+
 
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
@@ -114,11 +124,11 @@ function scene:create( event )
 	backButton:setFillColor(1, 1, 1)
 	backButton:addEventListener("tap", gotoMenu)
 
-	local sub = display.newRect( 1000, 50, 50, 50 )
-	sub:setFillColor( 1, 0, 0.3 )
+	-- local sub = display.newRect( 1000, 50, 50, 50 )
+	-- sub:setFillColor( 1, 0, 0.3 )
 	
-	local add = display.newRect(1200, 50, 50, 50 )
-	add:setFillColor( 0, 1, 0.3 )
+	-- local add = display.newRect(1200, 50, 50, 50 )
+	-- add:setFillColor( 0, 1, 0.3 )
 
     coinsText = display.newText( sceneGroup, "Coins:".. coins, display.contentCenterX, 75, Verdana, 44 )
 	coinsText:setFillColor(1, 1, 1)
@@ -190,13 +200,16 @@ function scene:create( event )
 	end
 
 
-	sub:addEventListener("tap", subCoins)
-	add:addEventListener("tap", addCoins)
+	-- sub:addEventListener("tap", subCoins)
+	-- add:addEventListener("tap", addCoins)
 
 	HPbuy:addEventListener("tap", buyHP)
 	energyBuy:addEventListener("tap", buyEnergy)
 	chargeBuy:addEventListener("tap", buyCharge)
 
+	backgroundSound = audio.loadStream("sounds/mainBack.wav")
+	upgradeSound = audio.loadSound("sounds/upgrade.wav")
+	selectSound = audio.loadSound("sounds/select.wav")
 end
 
 
@@ -212,6 +225,8 @@ function scene:show( event )
 	elseif ( phase == "did" ) then
 		-- Code here runs when the scene is entirely on screen
 		gameLoopTimer = timer.performWithDelay(50, gameLoop, 0)
+		audio.play(backgroundSound, {channel = 3, loops = -1})
+
 	end
 end
 
@@ -228,6 +243,7 @@ function scene:hide( event )
 	elseif ( phase == "did" ) then
 		-- Code here runs immediately after the scene goes entirely off screen
 		-- composer.removeScene("shop")
+		audio.stop(3)
 		composer.removeScene("shop")
 		timer.cancelAll()
 	end
@@ -239,6 +255,9 @@ function scene:destroy( event )
 
 	local sceneGroup = self.view
 	-- Code here runs prior to the removal of scene's view
+	audio.dispose(backgroundSound)
+	audio.dispose(upgradeSound)
+	audio.dispose(selectSound)
 
 end
 

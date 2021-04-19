@@ -19,6 +19,10 @@ local scoresTable = {}
 
 local filePath = system.pathForFile("scores.json", system.DocumentsDirectory)
 
+
+local backgroundSound
+local selectSound
+
 local function loadScores()
 	local file = io.open(filePath, "r")
 
@@ -48,6 +52,7 @@ local function saveScores()
 end
 
 local function gotoShop()
+	audio.play(selectSound)
 	composer.setVariable("coins", scoresTable[2])
 	composer.setVariable("healthLevel", scoresTable[3])
 	composer.setVariable("energyLevel", scoresTable[4])
@@ -57,11 +62,13 @@ local function gotoShop()
 end
 
 local function gotoGame()
+	audio.play(selectSound)
 	composer.setVariable("healthLevel", scoresTable[3])
 	composer.setVariable("energyLevel", scoresTable[4])
 	composer.setVariable("chargeLevel", scoresTable[5])
 	composer.gotoScene("game", { time=100, effect="crossFade" })
 end
+
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
@@ -116,22 +123,23 @@ function scene:create( event )
 	-- table.sort(scoresTable, compare)
 	saveScores()
 
-    local highScoresButton = display.newText( sceneGroup, "Highscore:".. scoresTable[1], display.contentCenterX, 3* display.contentHeight/4, Verdana, 44 )
+    local highScoresButton = display.newText( sceneGroup, "Highscore:".. scoresTable[1], display.contentCenterX, 475, Verdana, 44 )
 	highScoresButton:setFillColor(1, 1, 1)
 
 
-	local shopButton = display.newText(sceneGroup, "Upgrades", display.contentCenterX, 450, Verdana, 44)
+	local shopButton = display.newText(sceneGroup, "Upgrades", display.contentCenterX, 600, Verdana, 44)
 	shopButton:addEventListener("tap", gotoShop)
 
 
-    local coinsText = display.newText( sceneGroup, "Coins:".. scoresTable[2], display.contentCenterX, display.contentHeight - 100, Verdana, 44 )
-	coinsText:setFillColor(1, 1, 1)
+    -- local coinsText = display.newText( sceneGroup, "Coins:".. scoresTable[2], display.contentCenterX, display.contentHeight - 100, Verdana, 44 )
+	-- coinsText:setFillColor(1, 1, 1)
 
 
 	local systemFonts = native.getFontNames()
  
 -- Set the string to query for (part of the font name to locate)
-
+	backgroundSound = audio.loadStream("sounds/mainBack.wav")
+	selectSound = audio.loadSound("sounds/select.wav")
 end
 
 
@@ -146,6 +154,8 @@ function scene:show( event )
 
 	elseif ( phase == "did" ) then
 		-- Code here runs when the scene is entirely on screen
+
+        audio.play(backgroundSound, {channel = 2, loops = -1})
 
 	end
 end
@@ -162,6 +172,8 @@ function scene:hide( event )
 
 	elseif ( phase == "did" ) then
 		-- Code here runs immediately after the scene goes entirely off screen
+		audio.stop(2)
+
 		composer.removeScene("menu")
 	end
 end
@@ -172,6 +184,9 @@ function scene:destroy( event )
 
 	local sceneGroup = self.view
 	-- Code here runs prior to the removal of scene's view
+	audio.dispose(backgroundSound)
+	audio.dispose(selectSound)
+
 
 end
 
