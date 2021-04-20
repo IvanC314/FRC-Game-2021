@@ -74,14 +74,26 @@ local function gotoHelp()
 	composer.gotoScene("help", { time=100, effect="crossFade" })
 end
 
+local function gotoCredits()
+	audio.play(selectSound)
+	composer.gotoScene("credits", { time=100, effect="crossFade" })
+end
+
 local function gotolink()
+	audio.play(selectSound)
 	if (logo.x == 1160 and logo.y == 600) then
-    	system.openURL( "https://www.technotitans.org/" )
+    	gotoCredits()
 	else
 		logo.x = 1160
 		logo.y = 600
 	end
 end
+
+
+local function goToRealLink()
+	audio.play(selectSound)
+	system.openURL( "https://www.technotitans.org/" )
+end 
 
 local function logoMove()
 	logo.x = logo.x + math.random(-50, 50)
@@ -90,7 +102,7 @@ end
 
 local function move()
 	timer.performWithDelay(20, logoMove, 20)
-	transition.to(logo, {x = math.random(-100, 1400), y=math.random(-50, 800), time = math.random(3000, 10000)})
+	transition.to(logo, {x = math.random(-100, 1400), y=math.random(-50, 800), time = math.random(3000, 7000)})
 end
 
 -- -----------------------------------------------------------------------------------
@@ -121,10 +133,11 @@ function scene:create( event )
 	logo.y = 600
 	logo:addEventListener("tap", gotolink)
 
-	local moveDelay = timer.performWithDelay(8631, move, 0)
+	local moveDelay = timer.performWithDelay(6381, move, 0)
 
 	local made = display.newText(sceneGroup, "Made by Team 1683", 1150,  700 , verdana, 22)
 	made:setFillColor(1, 1, 1)
+	made:addEventListener("tap", goToRealLink)
 
 	local help = display.newText(sceneGroup, "Help", 80,  670 , verdana, 50)
 	help:setFillColor(1, 1, 1)
@@ -173,9 +186,6 @@ function scene:create( event )
 
     -- local coinsText = display.newText( sceneGroup, "Coins:".. scoresTable[2], display.contentCenterX, display.contentHeight - 100, Verdana, 44 )
 	-- coinsText:setFillColor(1, 1, 1)
-
-
-	local systemFonts = native.getFontNames()
  
 -- Set the string to query for (part of the font name to locate)
 	backgroundSound = audio.loadStream("sounds/mainBack.wav")
