@@ -60,7 +60,7 @@ function scene:create( event )
 	selectSound = audio.loadSound("sounds/select.wav")
 
 	local about = display.newText(sceneGroup, "Brought to you by Team 1683, \n         the Techno Titans", display.contentCenterX,  display.contentCenterY - 170, verdana, 60)
-	about:setFillColor(.7, .7, 1)
+	about:setFillColor(.6, .5, 1)
 	about:addEventListener("tap", gotoTechno)
 
 	local first = display.newText(sceneGroup, "Created as part of the FIRST Robotics Competition \n Learn more about FIRST at www.firstinspires.org", display.contentCenterX,  display.contentCenterY - 20, verdana, 50)
@@ -83,7 +83,7 @@ function scene:create( event )
 	learn:setFillColor(1, 1, 1)
 	learn:addEventListener("tap", gotoTechno)
 
-	local donate = display.newImageRect(sceneGroup, "images/donate.png", 175,  80)
+	local donate = display.newImageRect(sceneGroup, "images/donate.png", 175,  76)
 	donate.x = 950
 	donate.y = 610
 	donate:addEventListener("tap", gotoDonate)

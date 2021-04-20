@@ -33,6 +33,8 @@ local joystickOffsetY
 
 local asteroidsTable = {}
 local died = false
+local bossFight = false
+local spawning = false
 local gameLoopTimer
 local asteroidTimer
 local mgTimer
@@ -170,16 +172,20 @@ local function limitEnergy()
 	end
 end
 
-local energyTimer = timer.performWithDelay(100, addEnergy, 0)
+local energyTimer
+
+-- local energyTimer = timer.performWithDelay(100, addEnergy, 0)
 
 local function energyPress(event)
 	local energy = event.target
 	local phase = event.phase
+	-- local energyTimer
 
 	if("began" == phase) then
         display.getCurrentStage():setFocus( event.target, event.id )
 
-		timer.resume(energyTimer)
+		energyTimer = timer.performWithDelay(100, addEnergy, 0)
+		-- timer.resume(energyTimer)
 
 	-- elseif ("moved" == phase) then
 
@@ -187,7 +193,7 @@ local function energyPress(event)
 		
 	elseif("ended" == phase or "cancelled" == phase) then
         display.getCurrentStage():setFocus( event.target, nil )
-		timer.pause(energyTimer)
+		timer.cancel(energyTimer)
 	end
 	return true
 end
@@ -227,8 +233,13 @@ local function endGame()
 end
 
 local function speedCalc(x)
-	return 3500 - (1000*math.log(x + 1))
+	return 3500 - (300*math.log(x + 1))
 end
+
+local function spawnSwitch()
+	spawning = false 
+end
+
 
 local function createAsteroid()
 	local asteroidType = math.random(1, 3)
@@ -267,6 +278,16 @@ local function createAsteroid()
 		newAsteroid:setLinearVelocity(0, (6 * math.sqrt(score)) + 25)
 	end
 end
+
+local function asteroidSpawner()
+	if (spawning == false) then
+		timer.performWithDelay(speedCalc(score), createAsteroid, 1)
+		spawning = true
+		timer.performWithDelay(speedCalc(score), spawnSwitch, 1)
+		print(speedCalc(score))
+	end
+end
+
 local function spawnMG()
 	local newMG = display.newImageRect(mainGroup, "images/mg.png", 60, 60)
 	physics.addBody(newMG, "dynamic", {radius = 30, bounce = 0.2})
@@ -471,9 +492,7 @@ local function onCollision(event)
                 livesText.text = "Lives: "..lives
 
                 if (lives <= 0) then
-					timer.cancel(gameLoopTimer)
-					timer.cancel(asteroidTimer)
-					timer.cancel(energyTimer)
+					timer.cancelAll()
 					turret.alpha = 0
 					display.remove(base)
 					endGame()
@@ -499,7 +518,7 @@ local function gameLoop()
 
 
 	updateText()
-
+	asteroidSpawner()
 	joystickForce()
 	turret.x = turret.x + fx
 	stopTurret()
@@ -532,7 +551,7 @@ function scene:create( event )
 	local sceneGroup = self.view
 	-- Code here runs when the scene is first created but has not yet appeared on screen
 	physics.pause()
-	timer.pause(energyTimer)
+	-- timer.pause(energyTimer)
 	backGroup = display.newGroup()  -- Display group for the background image
     sceneGroup:insert( backGroup )  -- Insert into the scene's view group
  
@@ -641,7 +660,7 @@ function scene:show( event )
 		mgTimer = timer.performWithDelay(math.random(40000, 50000), spawnMG, 0)
 		laserTimer = timer.performWithDelay(math.random(50000, 60000), spawnLaser, 0)
 		spreadTimer = timer.performWithDelay(math.random(60000, 70000), spawnSpread, 0)
-		asteroidTimer = timer.performWithDelay(speedCalc(score), createAsteroid, 0)
+		-- asteroidTimer = timer.performWithDelay(speedCalc(score), createAsteroid, 0)
 	
 		audio.play(backgroundSound, {channel = 1, loops = -1})
 

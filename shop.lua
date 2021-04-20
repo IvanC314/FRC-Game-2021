@@ -61,16 +61,16 @@ local function gameLoop()
 end
 
 local function buyHP()
-	if (coins >= 20 and maxHP < 11) then
-		coins = coins - 20
+	if (coins >= 25 and maxHP < 11) then
+		coins = coins - 25
 		maxHP = maxHP + 1
 		audio.play(upgradeSound)
 	end
 end
 
 local function buyEnergy() 
-	if (coins >= 20 and maxEnergy < 9) then
-		coins = coins - 20
+	if (coins >= 25 and maxEnergy < 9) then
+		coins = coins - 25
 		maxEnergy = maxEnergy + 1
 		audio.play(upgradeSound)
 
@@ -79,8 +79,8 @@ end
 
 
 local function buyCharge()
-	if (coins >= 20 and chargeSpeed < 5) then
-		coins = coins - 20
+	if (coins >= 25 and chargeSpeed < 5) then
+		coins = coins - 25
 		chargeSpeed = chargeSpeed + 1
 		audio.play(upgradeSound)
 
@@ -133,7 +133,7 @@ function scene:create( event )
     coinsText = display.newText( sceneGroup, "Coins:".. coins, display.contentCenterX, 75, Verdana, 44 )
 	coinsText:setFillColor(1, 1, 1)
 
-	local help = display.newText( sceneGroup, "(All upgrades cost 20 coins)", 1050, 75, Verdana, 25 )
+	local help = display.newText( sceneGroup, "(All upgrades cost 25 coins)", 1050, 75, Verdana, 25 )
 	coinsText:setFillColor(1, 1, 1)
 	-- colors for upgrades
 	upgrade1 = display.newImageRect(sceneGroup, "images/shopHP.png", 150, 375/11 * maxHP)
