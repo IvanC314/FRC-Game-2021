@@ -69,6 +69,30 @@ local function gotoGame()
 	composer.gotoScene("game", { time=100, effect="crossFade" })
 end
 
+local function gotoHelp()
+	audio.play(selectSound)
+	composer.gotoScene("help", { time=100, effect="crossFade" })
+end
+
+local function gotolink()
+	if (logo.x == 1160 and logo.y == 600) then
+    	system.openURL( "https://www.technotitans.org/" )
+	else
+		logo.x = 1160
+		logo.y = 600
+	end
+end
+
+local function logoMove()
+	logo.x = logo.x + math.random(-50, 50)
+	logo.y = logo.y + math.random(-50, 50)
+end
+
+local function move()
+	timer.performWithDelay(20, logoMove, 20)
+	transition.to(logo, {x = math.random(-100, 1400), y=math.random(-50, 800), time = math.random(3000, 10000)})
+end
+
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
@@ -88,10 +112,23 @@ function scene:create( event )
 	local title = display.newText(sceneGroup, "Space Defense", display.contentCenterX,  150, verdana, 120)
 	title:setFillColor(math.random(50, 100) * .01, math.random(50, 100) * .01, math.random(50, 100) * .01)
 
-	local playButton = display.newText(sceneGroup, "Play", display.contentCenterX,  320 , verdana, 60)
+	local playButton = display.newText(sceneGroup, "Play", display.contentCenterX,  320 , verdana, 70)
 	playButton:setFillColor(1, 1, 1)
 	playButton:addEventListener("tap", gotoGame)
 
+	logo = display.newImageRect(sceneGroup, "images/logo.png", 150, 150)
+	logo.x = 1160
+	logo.y = 600
+	logo:addEventListener("tap", gotolink)
+
+	local moveDelay = timer.performWithDelay(8631, move, 0)
+
+	local made = display.newText(sceneGroup, "Made by Team 1683", 1150,  700 , verdana, 22)
+	made:setFillColor(1, 1, 1)
+
+	local help = display.newText(sceneGroup, "Help", 80,  670 , verdana, 50)
+	help:setFillColor(1, 1, 1)
+	help:addEventListener("tap", gotoHelp)
 
 	loadScores()
 
@@ -176,7 +213,7 @@ function scene:hide( event )
 	elseif ( phase == "did" ) then
 		-- Code here runs immediately after the scene goes entirely off screen
 		audio.stop(2)
-
+		timer.cancelAll()
 		composer.removeScene("menu")
 	end
 end

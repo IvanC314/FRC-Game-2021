@@ -20,13 +20,13 @@ local backgroundSound
 local upgradeSound
 local selectSound
 
-local function addCoins()
-	coins = coins + 10
-end
+-- local function addCoins()
+-- 	coins = coins + 10
+-- end
 
-local function subCoins()
-	coins = coins - 10
-end
+-- local function subCoins()
+-- 	coins = coins - 10
+-- end
 
 local function updateText()
 	coinsText.text = "Coins:"..coins
@@ -61,16 +61,16 @@ local function gameLoop()
 end
 
 local function buyHP()
-	if (coins >= 25 and maxHP < 11) then
-		coins = coins - 25
+	if (coins >= 20 and maxHP < 11) then
+		coins = coins - 20
 		maxHP = maxHP + 1
 		audio.play(upgradeSound)
 	end
 end
 
 local function buyEnergy() 
-	if (coins >= 25 and maxEnergy < 9) then
-		coins = coins - 25
+	if (coins >= 20 and maxEnergy < 9) then
+		coins = coins - 20
 		maxEnergy = maxEnergy + 1
 		audio.play(upgradeSound)
 
@@ -79,8 +79,8 @@ end
 
 
 local function buyCharge()
-	if (coins >= 25 and chargeSpeed < 5) then
-		coins = coins - 25
+	if (coins >= 20 and chargeSpeed < 5) then
+		coins = coins - 20
 		chargeSpeed = chargeSpeed + 1
 		audio.play(upgradeSound)
 
@@ -116,9 +116,9 @@ function scene:create( event )
 	background.xScale = 2
 	background.yScale = 2
 
-	local black = display.newImageRect(sceneGroup, "images/shop.png", 1225, 660)
-	black.x = display.contentCenterX
-	black.y = display.contentCenterY
+	-- local black = display.newImageRect(sceneGroup, "images/shop.png", 1225, 660)
+	-- black.x = display.contentCenterX
+	-- black.y = display.contentCenterY
 
 	local backButton = display.newText(sceneGroup, "Back", 105,  75 , verdana, 50)
 	backButton:setFillColor(1, 1, 1)
@@ -133,7 +133,7 @@ function scene:create( event )
     coinsText = display.newText( sceneGroup, "Coins:".. coins, display.contentCenterX, 75, Verdana, 44 )
 	coinsText:setFillColor(1, 1, 1)
 
-	local help = display.newText( sceneGroup, "(All upgrades cost 25 coins)", 1050, 75, Verdana, 25 )
+	local help = display.newText( sceneGroup, "(All upgrades cost 20 coins)", 1050, 75, Verdana, 25 )
 	coinsText:setFillColor(1, 1, 1)
 	-- colors for upgrades
 	upgrade1 = display.newImageRect(sceneGroup, "images/shopHP.png", 150, 375/11 * maxHP)
@@ -163,15 +163,15 @@ function scene:create( event )
 
 	HPbuy = display.newImageRect( sceneGroup, "images/buy.png", 90 , 58 )
 	HPbuy.x = 200
-	HPbuy.y = 600
+	HPbuy.y = 620
 
 	energyBuy = display.newImageRect( sceneGroup, "images/buy.png", 90 , 58 )
 	energyBuy.x = display.contentCenterX
-	energyBuy.y = 600
+	energyBuy.y = 620
 
 	chargeBuy = display.newImageRect( sceneGroup, "images/buy.png",  90 , 58 )
 	chargeBuy.x = display.contentWidth - 200
-	chargeBuy.y = 600
+	chargeBuy.y = 620
 
 
 
