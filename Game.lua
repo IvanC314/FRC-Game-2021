@@ -135,7 +135,7 @@ local function joystickDetect(event)
 	local phase = event.phase
 
 	if("began" == phase) then
-		-- display.currentStage:setFocus(joystick)
+        display.getCurrentStage():setFocus( event.target, event.id )
 		-- joystickOffsetX = event.x - joystick.x
 		-- joystickOffsetY = event.y - joystick.y
 		joystick.x = event.x
@@ -151,11 +151,11 @@ local function joystickDetect(event)
 		stopPad()
 		
 	elseif("ended" == phase or "cancelled" == phase) then
-		-- display.currentStage:setFocus(nil)
+        display.getCurrentStage():setFocus( event.target, nil )
 		joystick.x = display.contentWidth / 5
 		joystick.y = 3 * display.contentHeight / 4
 		fx = 0 
-		print("canceled")
+		-- print("canceled")
 	end
 	return true
 end
@@ -177,7 +177,7 @@ local function energyPress(event)
 	local phase = event.phase
 
 	if("began" == phase) then
-		display.currentStage:setFocus(energy)
+        display.getCurrentStage():setFocus( event.target, event.id )
 
 		timer.resume(energyTimer)
 
@@ -186,8 +186,26 @@ local function energyPress(event)
 	-- 	ammo = ammo + 1
 		
 	elseif("ended" == phase or "cancelled" == phase) then
-		display.currentStage:setFocus(nil)
+        display.getCurrentStage():setFocus( event.target, nil )
 		timer.pause(energyTimer)
+	end
+	return true
+end
+
+local function attackPress(event)
+	local energy = event.target
+	local phase = event.phase
+
+	if("began" == phase) then
+        display.getCurrentStage():setFocus( event.target, event.id )
+
+	-- elseif ("moved" == phase) then
+
+	-- 	ammo = ammo + 1
+		
+	elseif("ended" == phase or "cancelled" == phase) then
+        display.getCurrentStage():setFocus( event.target, nil )
+		fire()
 	end
 	return true
 end
@@ -613,7 +631,7 @@ function scene:show( event )
 		-- Code here runs when the scene is entirely on screen
 		physics.start()
 		Runtime:addEventListener( "collision", onCollision )
-		attack:addEventListener( "tap", fire )
+		attack:addEventListener( "touch", attackPress )
 		joystick:addEventListener("touch", joystickDetect)
 		energy:addEventListener("touch", energyPress)
 		-- energy:addEventListener("tap", fireNoCost)
@@ -649,7 +667,7 @@ function scene:hide( event )
 		-- timer.cancel(spawnMG)
 		timer.cancelAll()
 		Runtime:removeEventListener("collision", onCollision)
-		attack:removeEventListener("tap", fire)
+		attack:removeEventListener("touch", attackPress)
 		joystick:removeEventListener("touch", joystickDetect)
 		energy:removeEventListener("touch", energyPress)
 		physics.pause()

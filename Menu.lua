@@ -85,7 +85,10 @@ function scene:create( event )
 	background.xScale = 2
 	background.yScale = 2
 
-	local playButton = display.newText(sceneGroup, "Play", display.contentCenterX,  (3*display.contentHeight)/8 , verdana, 60)
+	local title = display.newText(sceneGroup, "Space Defense", display.contentCenterX,  150, verdana, 120)
+	title:setFillColor(math.random(50, 100) * .01, math.random(50, 100) * .01, math.random(50, 100) * .01)
+
+	local playButton = display.newText(sceneGroup, "Play", display.contentCenterX,  320 , verdana, 60)
 	playButton:setFillColor(1, 1, 1)
 	playButton:addEventListener("tap", gotoGame)
 
